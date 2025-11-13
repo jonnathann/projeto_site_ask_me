@@ -3,6 +3,8 @@ from pydantic import BaseModel
 class QuestionBase(BaseModel):
     title: str
     description: str  # 👈 esse campo precisa existir!
+    category: str  # ✅ adicionamos aqui
+
 
 class QuestionCreate(QuestionBase):
     pass
