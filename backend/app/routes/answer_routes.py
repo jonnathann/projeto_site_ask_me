@@ -7,6 +7,9 @@ from app.schemas.answer_schema import AnswerCreate, AnswerResponse
 from app.utils.media_detector import detect_media_type
 import asyncio
 
+# 👇 IMPORTANTE: importar conversor de shortcodes
+from app.utils.shorts_coverter_emoji import replace_shortcodes
+
 router = APIRouter(prefix="/answers", tags=["Answers"])
 
 @router.post("/{question_id}", response_model=AnswerResponse)
@@ -17,13 +20,16 @@ async def create_answer(question_id: int, answer: AnswerCreate, db: Session = De
     if not question:
         raise HTTPException(status_code=404, detail="Question not found")
 
+    # 🔥 Converter shortcodes em emojis
+    processed_content = replace_shortcodes(answer.content)
+
     media_type = None
     if answer.media_url:
         media_type = await detect_media_type(answer.media_url)
 
     new_answer = Answer(
         question_id=question_id,
-        content=answer.content,
+        content=processed_content,   # ← emojis já convertidos
         media_url=answer.media_url,
         media_type=media_type
     )
