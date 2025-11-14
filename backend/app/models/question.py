@@ -1,15 +1,19 @@
 from sqlalchemy import Column, Integer, String, Text
-from sqlalchemy.orm import relationship # adicionando import para relacionamento entre resposta e questão
+from sqlalchemy.orm import relationship
 from app.database.db import Base
+from app.models.answer import Answer   # 👉 IMPORT NECESSÁRIO PARA O RELACIONAMENTO
 
 class Question(Base):
     __tablename__ = "questions"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    description = Column(Text, nullable=False)  # 👈 troque content por description
-    category = Column(String, nullable=False)  # ✅ nova coluna
+    description = Column(Text, nullable=False)
+    category = Column(String, nullable=False)
 
-    answers = relationship("Answer", back_populates="question", cascade="all, delete-orphan") # chamando função de relacionamento
+    # Mídias da pergunta
+    media_url = Column(String, nullable=True)
+    media_type = Column(String, nullable=True)  # image, video, gif, other
 
-
+    # Relacionamento com respostas
+    answers = relationship("Answer", back_populates="question", cascade="all, delete-orphan")
