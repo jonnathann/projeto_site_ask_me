@@ -13,3 +13,7 @@ class Answer(Base):
     media_type = Column(String, nullable=True)  # "image", "video", "gif", "other"
 
     question = relationship("Question", back_populates="answers")
+
+    # Adicionando funcionalidade de comentários nas respostas
+    comments = relationship("Comment", back_populates="answer", cascade="all, delete")
+
