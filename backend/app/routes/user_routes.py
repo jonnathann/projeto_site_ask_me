@@ -1,36 +1,64 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.models.user import User
-from fastapi import Depends
-from passlib.context import CryptContext
+from app.schemas.user_schema import UserCreate, UserLogin, UserResponse
+from app.utils.security import hash_password, verify_password
+from app.utils.jwt_handler import create_token
 
-router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+router = APIRouter(prefix="/users", tags=["Users"])
 
-
-@router.post("/register")
-def register_user(username: str, email: str, password: str, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user:
+# 🔹 Registro de usuário
+@router.post("/register", response_model=UserResponse)
+def register(user: UserCreate, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.email == user.email).first()
+    if existing:
         raise HTTPException(status_code=400, detail="Email já cadastrado")
 
-    hashed_password = pwd_context.hash(password)
-    new_user = User(username=username, email=email, password=hashed_password)
+    new_user = User(
+        name=user.name,
+        email=user.email,
+        password_hash=hash_password(user.password),
+        avatar_url=user.avatar_url,
+        bio=user.bio
+    )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return {"message": "Usuário registrado com sucesso", "user_id": new_user.id}
+
+    return new_user
 
 
+# 🔹 Login
 @router.post("/login")
-def login_user(email: str, password: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=400, detail="Email não encontrado")
+def login(data: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
 
-    if not pwd_context.verify(password, user.password):
-        raise HTTPException(status_code=400, detail="Senha incorreta")
+    if not user or not verify_password(data.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
-    return {"message": "Login realizado com sucesso", "user_id": user.id, "username": user.username}
+    token = create_token({"user_id": user.id})
 
+    return {"access_token": token, "token_type": "bearer"}
+
+
+# 🔹 Obter dados do usuário logado
+from fastapi.security import HTTPBearer
+from jose import jwt
+from app.utils.jwt_handler import SECRET_KEY, ALGORITHM
+
+auth = HTTPBearer()
+
+@router.get("/me", response_model=UserResponse)
+def get_me(credentials = Depends(auth), db: Session = Depends(get_db)):
+    token = credentials.credentials
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+    except:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    return user

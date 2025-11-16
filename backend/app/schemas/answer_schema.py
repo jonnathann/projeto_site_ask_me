@@ -12,4 +12,5 @@ class AnswerResponse(AnswerBase):
     media_type: str | None = None
 
     class Config:
-        orm_mode = True
+        #orm_mode = True
+        from_attributes = True  # substitui o "orm_mode"

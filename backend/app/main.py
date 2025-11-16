@@ -1,9 +1,8 @@
 from fastapi import FastAPI
-from app.routes.user_routes import router as user_router
 from app.routes.question_routes import router as question_router  # sem o S!
 from app.routes.answer_routes import router as answer_router
 from app.routes.comment_routes import router as comment_router
-
+from app.routes.user_routes import router as user_router
 
 
 
