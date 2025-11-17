@@ -9,8 +9,9 @@ class AnswerCreate(AnswerBase):
 
 class AnswerResponse(AnswerBase):
     id: int
+    question_id: int
+    user_id: int  # 👈 NOVO CAMPO
     media_type: str | None = None
 
     class Config:
-        #orm_mode = True
-        from_attributes = True  # substitui o "orm_mode"
+        from_attributes = True

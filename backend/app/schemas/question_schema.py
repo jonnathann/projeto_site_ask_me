@@ -4,14 +4,15 @@ class QuestionBase(BaseModel):
     title: str
     description: str
     category: str
-    media_url: str | None = None   # 👉 OK aqui
+    media_url: str | None = None
 
 class QuestionCreate(QuestionBase):
     pass
 
 class QuestionResponse(QuestionBase):
     id: int
-    media_type: str | None = None   # 👉 tipo detectado (image, video, gif, other)
+    user_id: int  # 👈 NOVO CAMPO
+    media_type: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

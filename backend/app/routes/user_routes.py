@@ -5,6 +5,7 @@ from app.models.user import User
 from app.schemas.user_schema import UserCreate, UserLogin, UserResponse
 from app.utils.security import hash_password, verify_password
 from app.utils.jwt_handler import create_token
+from app.utils.shorts_coverter_emoji import replace_shortcodes  # ⬅️ Shortcodes → Emojis
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -20,7 +21,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         password_hash=hash_password(user.password),
         avatar_url=user.avatar_url,
-        bio=user.bio
+        bio=replace_shortcodes(user.bio) if user.bio else None
     )
 
     db.add(new_user)

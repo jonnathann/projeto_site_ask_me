@@ -7,9 +7,10 @@ class CommentCreate(BaseModel):
 class CommentResponse(BaseModel):
     id: int
     answer_id: int
+    user_id: int  # 👈 NOVO CAMPO
     content: str
     media_url: str | None = None
     media_type: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
