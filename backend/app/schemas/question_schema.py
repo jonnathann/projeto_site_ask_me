@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Dict, Optional  # 👈 NOVO IMPORT
 
 class QuestionBase(BaseModel):
     title: str
@@ -11,8 +12,10 @@ class QuestionCreate(QuestionBase):
 
 class QuestionResponse(QuestionBase):
     id: int
-    user_id: int  # 👈 NOVO CAMPO
+    user_id: int
     media_type: str | None = None
+    reactions: Optional[Dict[str, int]] = None  # 👈 NOVO CAMPO
+    user_reaction: Optional[str] = None  # 👈 NOVO CAMPO
 
     class Config:
         from_attributes = True

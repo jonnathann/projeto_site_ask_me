@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  # 👈 JÁ EXISTE
 from app.database.db import get_db
 from app.models.question import Question
-from app.models.user import User
+from app.models.user import User  # 👈 JÁ EXISTE
 from app.schemas.question_schema import QuestionCreate, QuestionResponse
 from app.utils.media_detector import detect_media_type
 from app.utils.shorts_coverter_emoji import replace_shortcodes
 
-# 👇 NOVOS IMPORTS para autenticação
+# 👇 IMPORTS para autenticação
 from fastapi.security import HTTPBearer
 from jose import jwt
 from app.utils.jwt_handler import SECRET_KEY, ALGORITHM
@@ -15,7 +15,7 @@ from app.utils.jwt_handler import SECRET_KEY, ALGORITHM
 router = APIRouter(prefix="/questions", tags=["Questions"])
 auth = HTTPBearer()
 
-# 👇 FUNÇÃO para obter usuário do token
+# 👇 FUNÇÃO para obter usuário do token (MANTER ESSA PRIMEIRO)
 def get_current_user(credentials = Depends(auth), db: Session = Depends(get_db)):
     token = credentials.credentials
     try:
@@ -28,12 +28,46 @@ def get_current_user(credentials = Depends(auth), db: Session = Depends(get_db))
     except:
         raise HTTPException(status_code=401, detail="Token inválido")
 
-# ✅ Listar perguntas (com filtros) - PÚBLICO
+# 👇 AGORA SIM A FUNÇÃO DE REAÇÕES (DEPOIS DOS IMPORTS)
+def get_question_reactions(question_id: int, db: Session, current_user: User = None):
+    """Busca reações de uma pergunta"""
+    from app.models.reaction import Reaction
+    from app.schemas.reaction_schema import REACTIONS_MAP
+    
+    # Buscar todas as reações para esta pergunta
+    reactions = db.query(Reaction).filter(
+        Reaction.content_type == 'question',
+        Reaction.content_id == question_id
+    ).all()
+    
+    # Contar reações por tipo
+    counts = {}
+    for reaction_type in REACTIONS_MAP.keys():
+        counts[reaction_type] = 0
+    
+    for reaction in reactions:
+        counts[reaction.reaction_type] += 1
+    
+    # Buscar reação atual do usuário
+    user_reaction = None
+    if current_user:
+        user_reaction_obj = db.query(Reaction).filter(
+            Reaction.user_id == current_user.id,
+            Reaction.content_type == 'question',
+            Reaction.content_id == question_id
+        ).first()
+        user_reaction = user_reaction_obj.reaction_type if user_reaction_obj else None
+    
+    return counts, user_reaction
+
+# ... (o resto do código permanece igual) ...
+# ✅ Listar perguntas (com filtros) - REQUER AUTENTICAÇÃO
 @router.get("/", response_model=list[QuestionResponse])
 def list_questions(
     db: Session = Depends(get_db),
     category: str | None = Query(None),
-    term: str | None = Query(None)
+    term: str | None = Query(None),
+    current_user: User = Depends(get_current_user)
 ):
     query = db.query(Question)
 
@@ -44,6 +78,13 @@ def list_questions(
         query = query.filter(Question.title.ilike(f"%{term}%"))
 
     questions = query.all()
+    
+    # Adicionar reações a cada pergunta
+    for question in questions:
+        reactions, user_reaction = get_question_reactions(question.id, db, current_user)
+        question.reactions = reactions
+        question.user_reaction = user_reaction
+    
     return questions
 
 # 🚀 Criar pergunta - REQUER AUTENTICAÇÃO
@@ -51,7 +92,7 @@ def list_questions(
 async def create_question(
     question: QuestionCreate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # 👈 USUÁRIO LOGADO
+    current_user: User = Depends(get_current_user)
 ):
     # Converter shortcodes → emojis
     title = replace_shortcodes(question.title)
@@ -70,10 +111,16 @@ async def create_question(
         category=category,
         media_url=question.media_url,
         media_type=media_type,
-        user_id=current_user.id  # 👈 VINCULANDO AO USUÁRIO
+        user_id=current_user.id
     )
 
     db.add(new_question)
     db.commit()
     db.refresh(new_question)
+    
+    # Adicionar reações à response (vazias inicialmente)
+    reactions, user_reaction = get_question_reactions(new_question.id, db, current_user)
+    new_question.reactions = reactions
+    new_question.user_reaction = user_reaction
+    
     return new_question
