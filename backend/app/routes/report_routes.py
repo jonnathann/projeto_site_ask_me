@@ -126,3 +126,85 @@ def update_report_status(
     db.commit()
     
     return {"message": f"Denúncia {report_id} atualizada para status: {status}"}
+
+
+# 👇 BLOQUEAR USUÁRIO (APENAS MODERADORES)
+@router.post("/{report_id}/block-user")
+def block_reported_user(
+    report_id: int,
+    block_days: int = Query(7, description="Dias de bloqueio (0 = permanente)"),
+    db: Session = Depends(get_db),
+    moderator: User = Depends(get_moderator)
+):
+    # Buscar a denúncia
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Denúncia não encontrada")
+    
+    # Buscar o usuário denunciado
+    user_to_block = db.query(User).filter(User.id == report.reported_user_id).first()
+    if not user_to_block:
+        raise HTTPException(status_code=404, detail="Usuário denunciado não encontrado")
+    
+    # Calcular data de suspensão
+    from datetime import datetime, timedelta
+    if block_days == 0:
+        # Bloqueio permanente
+        user_to_block.is_active = False
+        user_to_block.suspended_until = None
+        block_type = "permanente"
+    else:
+        # Bloqueio temporário
+        user_to_block.is_active = False
+        user_to_block.suspended_until = datetime.utcnow() + timedelta(days=block_days)
+        block_type = f"temporário de {block_days} dias"
+    
+    # Atualizar status da denúncia
+    report.status = "resolved"
+    
+    db.commit()
+    
+    return {
+        "message": f"Usuário {user_to_block.name} bloqueado {block_type}",
+        "user_id": user_to_block.id,
+        "block_type": block_type,
+        "suspended_until": user_to_block.suspended_until
+    }
+
+# 👇 DESBLOQUEAR USUÁRIO (APENAS MODERADORES)
+@router.post("/users/{user_id}/unblock")
+def unblock_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    moderator: User = Depends(get_moderator)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    user.is_active = True
+    user.suspended_until = None
+    
+    db.commit()
+    
+    return {"message": f"Usuário {user.name} desbloqueado com sucesso"}
+
+# 👇 LISTAR USUÁRIOS BLOQUEADOS (APENAS MODERADORES)
+@router.get("/blocked-users")
+def list_blocked_users(
+    db: Session = Depends(get_db),
+    moderator: User = Depends(get_moderator)
+):
+    blocked_users = db.query(User).filter(User.is_active == False).all()
+    
+    result = []
+    for user in blocked_users:
+        result.append({
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "suspended_until": user.suspended_until,
+            "is_permanent": user.suspended_until is None
+        })
+    
+    return result

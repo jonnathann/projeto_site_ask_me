@@ -7,6 +7,9 @@ from app.utils.security import hash_password, verify_password
 from app.utils.jwt_handler import create_token
 from app.utils.shorts_coverter_emoji import replace_shortcodes  # ⬅️ Shortcodes → Emojis
 
+# 👇 ADICIONAR A DEPENDÊNCIA DE BLOQUEIO
+from app.dependencies.block_check import check_user_blocked
+
 router = APIRouter(prefix="/users", tags=["Users"])
 
 # 🔹 Registro de usuário
@@ -44,22 +47,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-# 🔹 Obter dados do usuário logado
-from fastapi.security import HTTPBearer
-from jose import jwt
-from app.utils.jwt_handler import SECRET_KEY, ALGORITHM
-
-auth = HTTPBearer()
-
+# 🔹 Obter dados do usuário logado - 👈 ATUALIZADA!
 @router.get("/me", response_model=UserResponse)
-def get_me(credentials = Depends(auth), db: Session = Depends(get_db)):
-    token = credentials.credentials
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("user_id")
-    except:
-        raise HTTPException(status_code=401, detail="Token inválido")
-
-    user = db.query(User).filter(User.id == user_id).first()
-    return user
+def get_me(current_user: User = Depends(check_user_blocked)):  # 👈 MUDANÇA AQUI!
+    return current_user
