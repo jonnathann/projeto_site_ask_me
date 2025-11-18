@@ -4,7 +4,8 @@ from app.models.user import User
 from app.models.question import Question
 from app.models.answer import Answer
 from app.models.comment import Comment
-from app.models.reaction import Reaction  # 👈 NOVO IMPORT
+from app.models.reaction import Reaction
+from app.models.report import Report  # 👈 ADICIONAR ESTA LINHA
 
 def recreate_tables():
     print("🗑️  Apagando tabelas antigas...")
@@ -19,7 +20,8 @@ def recreate_tables():
     print("   - questions") 
     print("   - answers")
     print("   - comments")
-    print("   - reactions 👈 NOVA!")
+    print("   - reactions")
+    print("   - reports 👈 NOVA!")
 
 if __name__ == "__main__":
     recreate_tables()

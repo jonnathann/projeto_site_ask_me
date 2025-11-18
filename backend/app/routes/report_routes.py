@@ -1,0 +1,128 @@
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from app.database.db import get_db
+from app.models.report import Report
+from app.models.user import User
+from app.schemas.report_schema import ReportCreate, ReportResponse, ReportSummary
+
+# Imports para autenticação
+from fastapi.security import HTTPBearer
+from jose import jwt
+from app.utils.jwt_handler import SECRET_KEY, ALGORITHM
+
+router = APIRouter(prefix="/reports", tags=["Reports"])
+auth = HTTPBearer()
+
+# 👇 FUNÇÃO para obter usuário do token
+def get_current_user(credentials = Depends(auth), db: Session = Depends(get_db)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Usuário não encontrado")
+        return user
+    except:
+        raise HTTPException(status_code=401, detail="Token inválido")
+
+# 👇 FUNÇÃO para verificar se é moderador
+def get_moderator(current_user: User = Depends(get_current_user)):
+    if current_user.role not in ['moderator', 'admin']:
+        raise HTTPException(status_code=403, detail="Acesso restrito a moderadores")
+    return current_user
+
+# 👇 DENUNCIAR UM USUÁRIO
+@router.post("/", response_model=ReportResponse)
+def create_report(
+    report: ReportCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Verificar se o usuário denunciado existe
+    reported_user = db.query(User).filter(User.id == report.reported_user_id).first()
+    if not reported_user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    # Verificar se não está denunciando a si mesmo
+    if current_user.id == report.reported_user_id:
+        raise HTTPException(status_code=400, detail="Não é possível denunciar a si mesmo")
+    
+    # Verificar motivos válidos
+    valid_reasons = ['spam', 'harassment', 'inappropriate', 'other']
+    if report.reason not in valid_reasons:
+        raise HTTPException(status_code=400, detail=f"Motivo inválido. Use: {valid_reasons}")
+    
+    # Criar denúncia
+    new_report = Report(
+        reporter_id=current_user.id,
+        reported_user_id=report.reported_user_id,
+        reason=report.reason,
+        description=report.description,
+        status="pending"
+    )
+    
+    db.add(new_report)
+    db.commit()
+    db.refresh(new_report)
+    
+    return new_report
+
+# 👇 LISTAR DENÚNCIAS (APENAS MODERADORES)
+@router.get("/", response_model=list[ReportResponse])
+def list_reports(
+    db: Session = Depends(get_db),
+    status: str = Query(None),  # Filtrar por status
+    moderator: User = Depends(get_moderator)  # 👈 Apenas moderadores
+):
+    query = db.query(Report)
+    
+    if status:
+        query = query.filter(Report.status == status)
+    
+    # Ordenar por mais recente primeiro
+    reports = query.order_by(Report.created_at.desc()).all()
+    return reports
+
+# 👇 RESUMO DE DENÚNCIAS (APENAS MODERADORES)
+@router.get("/summary", response_model=ReportSummary)
+def get_reports_summary(
+    db: Session = Depends(get_db),
+    moderator: User = Depends(get_moderator)  # 👈 Apenas moderadores
+):
+    total_reports = db.query(Report).count()
+    pending_reports = db.query(Report).filter(Report.status == "pending").count()
+    
+    # Contar denúncias por usuário (para estatísticas)
+    user_reports_count = db.query(
+        Report.reported_user_id,
+        func.count(Report.id).label('report_count')
+    ).group_by(Report.reported_user_id).count()
+    
+    return ReportSummary(
+        total_reports=total_reports,
+        pending_reports=pending_reports,
+        user_reports_count=user_reports_count
+    )
+
+# 👇 ATUALIZAR STATUS DA DENÚNCIA (APENAS MODERADORES)
+@router.patch("/{report_id}")
+def update_report_status(
+    report_id: int,
+    status: str = Query(..., description="Novo status: pending, reviewed, resolved"),
+    db: Session = Depends(get_db),
+    moderator: User = Depends(get_moderator)
+):
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Denúncia não encontrada")
+    
+    valid_statuses = ['pending', 'reviewed', 'resolved']
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Status inválido. Use: {valid_statuses}")
+    
+    report.status = status
+    db.commit()
+    
+    return {"message": f"Denúncia {report_id} atualizada para status: {status}"}
