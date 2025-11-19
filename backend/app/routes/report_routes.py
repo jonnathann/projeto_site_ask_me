@@ -5,6 +5,8 @@ from app.database.db import get_db
 from app.models.report import Report
 from app.models.user import User
 from app.schemas.report_schema import ReportCreate, ReportResponse, ReportSummary
+from app.services.notification_service import NotificationService  # 👈 ADICIONAR IMPORT
+
 
 # Imports para autenticação
 from fastapi.security import HTTPBearer
@@ -129,6 +131,8 @@ def update_report_status(
 
 
 # 👇 BLOQUEAR USUÁRIO (APENAS MODERADORES)
+from app.services.notification_service import NotificationService  # 👈 ADICIONAR IMPORT
+
 @router.post("/{report_id}/block-user")
 def block_reported_user(
     report_id: int,
@@ -159,6 +163,22 @@ def block_reported_user(
         user_to_block.suspended_until = datetime.utcnow() + timedelta(days=block_days)
         block_type = f"temporário de {block_days} dias"
     
+    # 👇 NOTIFICAÇÃO AUTOMÁTICA - Usuário bloqueado
+    NotificationService.notify_user_blocked(
+        db=db,
+        user_id=user_to_block.id,
+        block_days=block_days,
+        moderator_name=moderator.name
+    )
+    
+    # 👇 NOTIFICAÇÃO AUTOMÁTICA - Denunciante informado
+    NotificationService.notify_report_resolved(
+        db=db,
+        reporter_id=report.reporter_id,
+        reported_user_name=user_to_block.name,
+        action_taken=f"Usuário bloqueado {block_type}"
+    )
+    
     # Atualizar status da denúncia
     report.status = "resolved"
     
@@ -168,9 +188,9 @@ def block_reported_user(
         "message": f"Usuário {user_to_block.name} bloqueado {block_type}",
         "user_id": user_to_block.id,
         "block_type": block_type,
-        "suspended_until": user_to_block.suspended_until
+        "suspended_until": user_to_block.suspended_until,
+        "notifications_sent": 2  # 👈 CONFIRMAÇÃO
     }
-
 # 👇 DESBLOQUEAR USUÁRIO (APENAS MODERADORES)
 @router.post("/users/{user_id}/unblock")
 def unblock_user(
@@ -185,26 +205,16 @@ def unblock_user(
     user.is_active = True
     user.suspended_until = None
     
+    # 👇 NOTIFICAÇÃO AUTOMÁTICA - Usuário desbloqueado
+    NotificationService.notify_user_unblocked(
+        db=db,
+        user_id=user.id,
+        moderator_name=moderator.name
+    )
+    
     db.commit()
     
-    return {"message": f"Usuário {user.name} desbloqueado com sucesso"}
-
-# 👇 LISTAR USUÁRIOS BLOQUEADOS (APENAS MODERADORES)
-@router.get("/blocked-users")
-def list_blocked_users(
-    db: Session = Depends(get_db),
-    moderator: User = Depends(get_moderator)
-):
-    blocked_users = db.query(User).filter(User.is_active == False).all()
-    
-    result = []
-    for user in blocked_users:
-        result.append({
-            "id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "suspended_until": user.suspended_until,
-            "is_permanent": user.suspended_until is None
-        })
-    
-    return result
+    return {
+        "message": f"Usuário {user.name} desbloqueado com sucesso",
+        "notification_sent": True  # 👈 CONFIRMAÇÃO
+    }
