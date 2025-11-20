@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Boolean  # 👈 ADICIONAR Boolean
 from sqlalchemy.orm import relationship
 from app.database.db import Base
 from app.models.answer import Answer
@@ -12,13 +12,12 @@ class Question(Base):
     description = Column(Text, nullable=False)
     category = Column(String, nullable=False)
     
-    # 👇 NOVO CAMPO: vinculação com usuário
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # 👇 NOVO CAMPO
+    is_anonymous = Column(Boolean, default=False)
     
-    # Mídias da pergunta
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     media_url = Column(String, nullable=True)
     media_type = Column(String, nullable=True)
 
-    # Relacionamentos
     answers = relationship("Answer", back_populates="question", cascade="all, delete-orphan")
-    user = relationship("User")  # 👈 NOVO RELACIONAMENTO
+    user = relationship("User")

@@ -79,11 +79,21 @@ def list_questions(
 
     questions = query.all()
     
-    # Adicionar reações a cada pergunta
+    # Adicionar reações E author_name a cada pergunta
     for question in questions:
         reactions, user_reaction = get_question_reactions(question.id, db, current_user)
         question.reactions = reactions
         question.user_reaction = user_reaction
+        
+        # 👇 LÓGICA DE ANONIMATO
+        if question.is_anonymous:
+            # Moderadores veem o autor real, outros veem "Anônimo"
+            if current_user.role in ['moderator', 'admin']:
+                question.author_name = question.user.name
+            else:
+                question.author_name = "Anônimo"
+        else:
+            question.author_name = question.user.name
     
     return questions
 
@@ -104,23 +114,30 @@ async def create_question(
     if question.media_url:
         media_type = await detect_media_type(question.media_url)
 
-    # Criar pergunta VINCULADA AO USUÁRIO
+    # Criar pergunta (agora com is_anonymous)
     new_question = Question(
         title=title,
         description=description,
         category=category,
         media_url=question.media_url,
         media_type=media_type,
-        user_id=current_user.id
+        user_id=current_user.id,
+        is_anonymous=question.is_anonymous  # 👈 NOVO CAMPO
     )
 
     db.add(new_question)
     db.commit()
     db.refresh(new_question)
     
-    # Adicionar reações à response (vazias inicialmente)
+    # Adicionar reações à response
     reactions, user_reaction = get_question_reactions(new_question.id, db, current_user)
     new_question.reactions = reactions
     new_question.user_reaction = user_reaction
+    
+    # 👇 ADICIONAR author_name (lógica de anonimato)
+    if new_question.is_anonymous:
+        new_question.author_name = "Anônimo"
+    else:
+        new_question.author_name = current_user.name
     
     return new_question
