@@ -13,8 +13,6 @@ from app.routes.test_routes import router as test_router  # 👈 ADICIONAR (TEST
 from app.routes.dashboard_routes import router as dashboard_router  # 👈 ADICIONAR
 
 
-
-
 app = FastAPI(title="Ask Me API")
 
 # 👇 INCLUINDO ROTAS PRINCIPAIS

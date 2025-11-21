@@ -81,22 +81,29 @@ async def create_answer(
     if answer.media_url:
         media_type = await detect_media_type(answer.media_url)
 
-    # Criar resposta VINCULADA AO USUÁRIO
+    # Criar resposta VINCULADA AO USUÁRIO (agora com is_anonymous)
     new_answer = Answer(
         question_id=question_id,
         content=processed_content,
         media_url=answer.media_url,
         media_type=media_type,
-        user_id=current_user.id
+        user_id=current_user.id,
+        is_anonymous=answer.is_anonymous  # 👈 NOVO CAMPO
     )
 
     db.add(new_answer)
     db.commit()
     db.refresh(new_answer)
     
-    # 👇 ADICIONAR REAÇÕES À RESPONSE
+    # 👇 ADICIONAR REAÇÕES E author_name
     reactions, user_reaction = get_answer_reactions(new_answer.id, db, current_user)
     new_answer.reactions = reactions
     new_answer.user_reaction = user_reaction
+    
+    # 👇 LÓGICA DE ANONIMATO PARA RESPOSTAS
+    if new_answer.is_anonymous:
+        new_answer.author_name = "Anônimo"
+    else:
+        new_answer.author_name = current_user.name
     
     return new_answer

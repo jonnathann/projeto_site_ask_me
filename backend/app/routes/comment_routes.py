@@ -34,7 +34,7 @@ async def create_comment(
     answer_id: int, 
     comment: CommentCreate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # 👈 USUÁRIO LOGADO
+    current_user: User = Depends(get_current_user)
 ):
     answer = db.query(Answer).filter(Answer.id == answer_id).first()
     if not answer:
@@ -48,16 +48,24 @@ async def create_comment(
     if comment.media_url:
         media_type = await detect_media_type(comment.media_url)
 
-    # Criar comentário VINCULADO AO USUÁRIO
+    # Criar comentário VINCULADO AO USUÁRIO (agora com is_anonymous)
     new_comment = Comment(
         answer_id=answer_id,
         content=processed_content,
         media_url=comment.media_url,
         media_type=media_type,
-        user_id=current_user.id  # 👈 VINCULANDO AO USUÁRIO
+        user_id=current_user.id,
+        is_anonymous=comment.is_anonymous  # 👈 NOVO CAMPO
     )
 
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
+    
+    # 👇 LÓGICA DE ANONIMATO PARA COMENTÁRIOS
+    if new_comment.is_anonymous:
+        new_comment.author_name = "Anônimo"
+    else:
+        new_comment.author_name = current_user.name
+    
     return new_comment
