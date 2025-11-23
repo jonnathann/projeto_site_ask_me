@@ -8,6 +8,8 @@ from app.models.reaction import Reaction
 from app.models.report import Report
 from app.models.notification import Notification
 from app.models.friendship import Friendship
+from app.models.badge import Badge  # 👈 ADICIONAR
+from app.models.user_badge import UserBadge  # 👈 ADICIONAR
 
 def recreate_tables():
     print("🗑️  Apagando tabelas antigas...")
@@ -18,7 +20,7 @@ def recreate_tables():
     
     print("✅ Banco recriado com sucesso!")
     print("📊 Tabelas criadas:")
-    print("   - users 👈 ATUALIZADA (level/xp)")
+    print("   - users")
     print("   - questions") 
     print("   - answers")
     print("   - comments")
@@ -26,6 +28,8 @@ def recreate_tables():
     print("   - reports")
     print("   - notifications")
     print("   - friendships")
+    print("   - badges 👈 NOVA!")
+    print("   - user_badges 👈 NOVA!")
 
 if __name__ == "__main__":
     recreate_tables()

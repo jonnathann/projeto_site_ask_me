@@ -22,7 +22,6 @@ class XPService:
         8: 2800,
         9: 3600, 
         10: 4500
-        # Pode expandir depois
     }
     
     @staticmethod
@@ -58,8 +57,9 @@ class XPService:
     
     @staticmethod
     def add_xp(db: Session, user_id: int, action: str, content_id: int = None):
-        """Adiciona XP para um usuário baseado na ação"""
+        """Adiciona XP para um usuário baseado na ação E verifica badges"""
         from app.models.user import User
+        from app.services.badge_service import BadgeChecker
         
         if action not in XPService.XP_RULES:
             return None
@@ -81,6 +81,22 @@ class XPService:
         if level_up:
             user.level = new_level
         
+        # 👇 VERIFICAR BADGES APÓS ADICIONAR XP
+        new_badges = BadgeChecker.check_badges(db, user_id, action)
+        
+        # Se conquistou badges, adicionar XP extra das badges
+        xp_from_badges = 0
+        badge_names = []
+        
+        for badge_info in new_badges:
+            badge = badge_info["badge"]
+            xp_from_badges += badge.xp_reward
+            badge_names.append(badge.name)
+        
+        if xp_from_badges > 0:
+            user.xp += xp_from_badges
+            print(f"⭐ +{xp_from_badges} XP extra de badges!")
+        
         db.commit()
         
         return {
@@ -88,5 +104,8 @@ class XPService:
             "new_xp": user.xp,
             "new_level": user.level,
             "level_up": level_up,
-            "level_info": XPService.get_level_info(user.xp)
+            "level_info": XPService.get_level_info(user.xp),
+            "new_badges": badge_names,
+            "xp_from_badges": xp_from_badges,
+            "total_xp_gained": xp_to_add + xp_from_badges
         }

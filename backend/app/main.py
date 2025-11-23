@@ -12,7 +12,9 @@ from app.routes.notification_routes import router as notification_router
 from app.routes.test_routes import router as test_router
 from app.routes.dashboard_routes import router as dashboard_router
 from app.routes.friendship_routes import router as friendship_router  # 👈 ADICIONAR ESTA LINHA
-from app.routes.leaderboard_routes import router as leaderboard_router #NOVA LINHA
+from app.routes.leaderboard_routes import router as leaderboard_router # NOVA LINHA
+from app.routes.badge_routes import router as badge_router # NOVA LINHA
+ 
 
 
 app = FastAPI(title="Ask Me API")
@@ -30,6 +32,7 @@ app.include_router(test_router)
 app.include_router(dashboard_router)
 app.include_router(friendship_router)  # 👈 ADICIONAR ESTA LINHA
 app.include_router(leaderboard_router) # ADICIONAR ESTA LINHA
+app.include_router(badge_router)  # 👈 ADICIONAR ESTA LINHA
 
 
 @app.get("/")
