@@ -6,6 +6,8 @@ from app.models.user import User  # 👈 JÁ EXISTE
 from app.schemas.question_schema import QuestionCreate, QuestionResponse
 from app.utils.media_detector import detect_media_type
 from app.utils.shorts_coverter_emoji import replace_shortcodes
+from app.services.xp_service import XPService  # 👈 ADICIONAR IMPORT
+
 
 # 👇 IMPORTS para autenticação
 from fastapi.security import HTTPBearer
@@ -128,6 +130,12 @@ async def create_question(
     db.add(new_question)
     db.commit()
     db.refresh(new_question)
+
+
+    # 👇 ADICIONAR XP POR CRIAR PERGUNTA
+    xp_result = XPService.add_xp(db, current_user.id, "create_question", new_question.id)
+    if xp_result and xp_result["level_up"]:
+        print(f"🎉 {current_user.name} subiu para level {xp_result['new_level']}!")
     
     # Adicionar reações à response
     reactions, user_reaction = get_question_reactions(new_question.id, db, current_user)

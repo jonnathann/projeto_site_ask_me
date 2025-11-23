@@ -7,6 +7,8 @@ from app.models.user import User  # 👈 JÁ EXISTE
 from app.schemas.answer_schema import AnswerCreate, AnswerResponse
 from app.utils.media_detector import detect_media_type
 from app.utils.shorts_coverter_emoji import replace_shortcodes
+from app.services.xp_service import XPService #Novo
+
 
 # 👇 IMPORTS para autenticação
 from fastapi.security import HTTPBearer
@@ -94,6 +96,11 @@ async def create_answer(
     db.add(new_answer)
     db.commit()
     db.refresh(new_answer)
+
+    # 👇 ADICIONAR XP POR CRIAR RESPOSTA
+    xp_result = XPService.add_xp(db, current_user.id, "create_answer", new_answer.id)
+    if xp_result and xp_result["level_up"]:
+        print(f"🎉 {current_user.name} subiu para level {xp_result['new_level']}!")
     
     # 👇 ADICIONAR REAÇÕES E author_name
     reactions, user_reaction = get_answer_reactions(new_answer.id, db, current_user)

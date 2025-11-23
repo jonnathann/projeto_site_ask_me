@@ -1,4 +1,4 @@
-# recreate_database.py
+# backend/recreate_database.py
 from app.database.db import engine, Base
 from app.models.user import User
 from app.models.question import Question
@@ -6,9 +6,8 @@ from app.models.answer import Answer
 from app.models.comment import Comment
 from app.models.reaction import Reaction
 from app.models.report import Report
-from app.models.notification import Notification  # 👈 ADICIONAR ESTA LINHA
-from app.models.friendship import Friendship  # 👈 ADICIONAR ESTA LINHA
-
+from app.models.notification import Notification
+from app.models.friendship import Friendship
 
 def recreate_tables():
     print("🗑️  Apagando tabelas antigas...")
@@ -19,15 +18,14 @@ def recreate_tables():
     
     print("✅ Banco recriado com sucesso!")
     print("📊 Tabelas criadas:")
-    print("   - users")
+    print("   - users 👈 ATUALIZADA (level/xp)")
     print("   - questions") 
     print("   - answers")
     print("   - comments")
     print("   - reactions")
     print("   - reports")
     print("   - notifications")
-    print("   - friendships 👈 NOVA!")
-
+    print("   - friendships")
 
 if __name__ == "__main__":
     recreate_tables()

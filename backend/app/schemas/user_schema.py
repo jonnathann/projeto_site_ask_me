@@ -1,3 +1,4 @@
+# app/schemas/user_schema.py
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -18,7 +19,17 @@ class UserResponse(BaseModel):
     email: str
     avatar_url: str | None
     bio: str | None
-    created_at: datetime  # ← ACEITA datetime do banco
+    level: int  # 👈 NOVO CAMPO
+    xp: int    # 👈 NOVO CAMPO
+    created_at: datetime
 
     class Config:
-        from_attributes = True  # substitui o "orm_mode"
+        from_attributes = True
+
+# 👇 NOVO SCHEMA PARA INFO DE LEVEL
+class UserLevelInfo(BaseModel):
+    level: int
+    xp: int
+    xp_to_next_level: int
+    xp_current_level: int
+    progress_percentage: float

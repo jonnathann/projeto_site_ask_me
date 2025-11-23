@@ -6,6 +6,7 @@ from app.models.user import User
 from app.models.question import Question
 from app.models.answer import Answer
 from app.schemas.reaction_schema import ReactionCreate, ReactionResponse, ReactionSummary, REACTIONS_MAP
+from app.services.xp_service import XPService  # Novo
 
 # Imports para autenticação
 from fastapi.security import HTTPBearer
@@ -15,8 +16,8 @@ from app.utils.jwt_handler import SECRET_KEY, ALGORITHM
 router = APIRouter(prefix="/reactions", tags=["Reactions"])
 auth = HTTPBearer()
 
-# Função para obter usuário do token (já temos essa, mas vou incluir aqui)
-def get_current_user(credentials = Depends(auth), db: Session = Depends(get_db)):
+# Função para obter usuário do token
+def get_current_user(credentials=Depends(auth), db: Session=Depends(get_db)):
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -44,11 +45,18 @@ def add_reaction(
     if reaction.reaction_type not in REACTIONS_MAP:
         raise HTTPException(status_code=400, detail=f"Reaction type inválido. Opções: {list(REACTIONS_MAP.keys())}")
     
-    # Verificar se o conteúdo existe
+    # 👇 INICIALIZAR content_owner_id
+    content_owner_id = None
+    
+    # Verificar se o conteúdo existe E buscar o dono
     if content_type == 'question':
         content = db.query(Question).filter(Question.id == content_id).first()
+        if content:
+            content_owner_id = content.user_id
     else:  # answer
         content = db.query(Answer).filter(Answer.id == content_id).first()
+        if content:
+            content_owner_id = content.user_id
     
     if not content:
         raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
@@ -71,6 +79,14 @@ def add_reaction(
             existing_reaction.reaction_type = reaction.reaction_type
             db.commit()
             db.refresh(existing_reaction)
+            
+            # 👇 DAR XP PARA O DONO DO CONTEÚDO (se for reação nova E não for o próprio usuário)
+            if content_owner_id and content_owner_id != current_user.id:
+                xp_result = XPService.add_xp(db, content_owner_id, "receive_reaction", content_id)
+                if xp_result and xp_result["level_up"]:
+                    content_owner = db.query(User).filter(User.id == content_owner_id).first()
+                    print(f"🎉 {content_owner.name} subiu para level {xp_result['new_level']} por receber reação!")
+            
             return existing_reaction
     else:
         # Criar nova reação
@@ -84,6 +100,14 @@ def add_reaction(
         db.add(new_reaction)
         db.commit()
         db.refresh(new_reaction)
+        
+        # 👇 DAR XP PARA O DONO DO CONTEÚDO (se não for o próprio usuário)
+        if content_owner_id and content_owner_id != current_user.id:
+            xp_result = XPService.add_xp(db, content_owner_id, "receive_reaction", content_id)
+            if xp_result and xp_result["level_up"]:
+                content_owner = db.query(User).filter(User.id == content_owner_id).first()
+                print(f"🎉 {content_owner.name} subiu para level {xp_result['new_level']} por receber reação!")
+        
         return new_reaction
 
 @router.get("/{content_type}/{content_id}/summary", response_model=ReactionSummary)

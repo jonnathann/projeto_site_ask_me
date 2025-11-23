@@ -7,6 +7,8 @@ from app.models.user import User
 from app.schemas.comment_schema import CommentCreate, CommentResponse
 from app.utils.media_detector import detect_media_type
 from app.utils.shorts_coverter_emoji import replace_shortcodes
+from app.services.xp_service import XPService #Novo
+
 
 # 👇 IMPORTS para autenticação
 from fastapi.security import HTTPBearer
@@ -61,6 +63,11 @@ async def create_comment(
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
+
+    # 👇 ADICIONAR XP POR CRIAR COMENTÁRIO
+    xp_result = XPService.add_xp(db, current_user.id, "create_comment", new_comment.id)
+    if xp_result and xp_result["level_up"]:
+        print(f"🎉 {current_user.name} subiu para level {xp_result['new_level']}!")
     
     # 👇 LÓGICA DE ANONIMATO PARA COMENTÁRIOS
     if new_comment.is_anonymous:
