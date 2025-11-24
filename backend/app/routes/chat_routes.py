@@ -1,5 +1,5 @@
 # app/routes/chat_routes.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.models.conversation import Conversation
@@ -220,7 +220,7 @@ def get_messages(
         Message.conversation_id == conversation_id
     ).order_by(Message.created_at.asc()).all()
     
-    # Marcar mensagens como lidas (apenas as do outro usuário)
+    # Marcar mensagens como lida (apenas as do outro usuário)
     for message in messages:
         if message.sender_id != current_user.id and not message.is_read:
             message.is_read = True
@@ -271,24 +271,62 @@ def mark_message_as_read(
     
     return {"message": "Mensagem marcada como lida"}
 
+# 👇 NOVO ENDPOINT OTIMIZADO
 @router.get("/unread-count")
 def get_unread_count(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Retorna o total de mensagens não lidas"""
-    # Buscar conversas do usuário
-    conversations = db.query(Conversation).filter(
-        (Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id)
-    ).all()
-    
-    total_unread = 0
-    for conv in conversations:
-        unread_count = db.query(Message).filter(
-            Message.conversation_id == conv.id,
-            Message.sender_id != current_user.id,  # Só mensagens de outros
-            Message.is_read == False
-        ).count()
-        total_unread += unread_count
+    """Retorna o total de mensagens não lidas (OTIMIZADO)"""
+    total_unread = db.query(Message).join(Conversation).filter(
+        ((Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id)),
+        Message.sender_id != current_user.id,
+        Message.is_read == False
+    ).count()
     
     return {"unread_count": total_unread}
+
+# 👇 NOVO ENDPOINT - MENSAGENS RECENTES PARA NOTIFICAÇÕES
+@router.get("/recent-messages")
+def get_recent_unread_messages(
+    limit: int = Query(5, description="Quantidade máxima de mensagens"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Retorna mensagens recentes não lidas para notificações"""
+    # Buscar mensagens não lidas do usuário
+    unread_messages = db.query(Message).join(Conversation).filter(
+        ((Conversation.user1_id == current_user.id) | (Conversation.user2_id == current_user.id)),
+        Message.sender_id != current_user.id,
+        Message.is_read == False
+    ).order_by(Message.created_at.desc()).limit(limit).all()
+    
+    recent_messages = []
+    
+    for msg in unread_messages:
+        sender = db.query(User).filter(User.id == msg.sender_id).first()
+        
+        # Determinar com quem é a conversa
+        conversation = db.query(Conversation).filter(Conversation.id == msg.conversation_id).first()
+        if conversation.user1_id == current_user.id:
+            other_user_id = conversation.user2_id
+        else:
+            other_user_id = conversation.user1_id
+        
+        other_user = db.query(User).filter(User.id == other_user_id).first()
+        
+        recent_messages.append({
+            "id": msg.id,
+            "conversation_id": msg.conversation_id,
+            "sender_id": msg.sender_id,
+            "sender_name": sender.name,
+            "content": msg.content,
+            "created_at": msg.created_at,
+            "conversation_with": other_user.name,
+            "conversation_with_avatar": other_user.avatar_url
+        })
+    
+    return {
+        "recent_messages": recent_messages,
+        "total_unread": len(recent_messages)
+    }
