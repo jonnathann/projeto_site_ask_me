@@ -10,6 +10,8 @@ from app.models.notification import Notification
 from app.models.friendship import Friendship
 from app.models.badge import Badge  # 👈 ADICIONAR
 from app.models.user_badge import UserBadge  # 👈 ADICIONAR
+from app.models.conversation import Conversation  # 👈 ADICIONAR
+from app.models.message import Message  # 👈 ADICIONAR
 
 def recreate_tables():
     print("🗑️  Apagando tabelas antigas...")
@@ -28,8 +30,10 @@ def recreate_tables():
     print("   - reports")
     print("   - notifications")
     print("   - friendships")
-    print("   - badges 👈 NOVA!")
-    print("   - user_badges 👈 NOVA!")
+    print("   - badges")
+    print("   - user_badges")
+    print("   - conversations 👈 NOVA!")
+    print("   - messages 👈 NOVA!")
 
 if __name__ == "__main__":
     recreate_tables()
