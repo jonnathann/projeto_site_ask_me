@@ -1,5 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// App.tsx - VERSÃO COMPLETA E CORRIGIDA
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Header } from './components/Layout/Header';
 import { QuestionFeed } from './components/Question/QuestionFeed';
 import { QuestionPage } from './pages/QuestionPage/QuestionPage';
@@ -7,11 +9,31 @@ import { CreateQuestionModal } from './components/Modal/CreateQuestionModal';
 import { SearchPage } from './pages/SearchPage/SearchPage';
 import { TagsPage } from './pages/TagsPage/TagsPage';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage';
+import { LoginPage } from './pages/LoginPage/LoginPage';
+import { SignupPage } from './pages/SignupPage/SignupPage';
 import { Question } from './types/Question';
 
-function App() {
+// Componente para rotas protegidas
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Componente principal com lógica das rotas
+function AppContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  
+  // Definir quais páginas NÃO devem ter Header
+  const noHeaderPages = ['/login', '/signup', '/forgot-password'];
+  const shouldShowHeader = isAuthenticated && !noHeaderPages.includes(location.pathname);
 
   const handleCreateQuestion = async (questionData: { 
     title: string; 
@@ -35,42 +57,107 @@ function App() {
       isAnswered: false
     };
 
-    // Adiciona a nova pergunta (na prática, enviaria para API)
     setQuestions(prev => [newQuestion, ...prev]);
     setIsModalOpen(false);
-    
     console.log('Nova pergunta criada:', newQuestion);
   };
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-        <Header onCreateQuestion={() => setIsModalOpen(true)} />
-        
-        {/* Modal de Criar Pergunta (global) */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      {/* Header só aparece quando autenticado e NÃO está em página de auth */}
+      {shouldShowHeader && <Header onCreateQuestion={() => setIsModalOpen(true)} />}
+      
+      {/* Modal de Criar Pergunta (só para autenticados) */}
+      {isAuthenticated && (
         <CreateQuestionModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleCreateQuestion}
         />
+      )}
+      
+      <Routes>
+        {/* Rotas públicas - SEM HEADER */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
         
-        <Routes>
-          <Route 
-            path="/" 
-            element={
+        {/* Rotas protegidas - COM HEADER */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
               <QuestionFeed 
                 onCreateQuestion={() => setIsModalOpen(true)} 
                 questions={questions}
               />
-            } 
-          />
-          <Route path="/question/:id" element={<QuestionPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/tags" element={<TagsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/:id" element={<ProfilePage />} />
-        </Routes>
-      </div>
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/question/:id" 
+          element={
+            <ProtectedRoute>
+              <QuestionPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/search" 
+          element={
+            <ProtectedRoute>
+              <SearchPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/tags" 
+          element={
+            <ProtectedRoute>
+              <TagsPage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/profile/:id" 
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Rota padrão */}
+        <Route 
+          path="*" 
+          element={
+            <Navigate to={isAuthenticated ? "/" : "/login"} replace />
+          } 
+        />
+      </Routes>
+    </div>
+  );
+}
+
+// Componente principal com providers
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }

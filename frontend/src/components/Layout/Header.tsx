@@ -1,5 +1,7 @@
+// components/Layout/Header.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
   onCreateQuestion: () => void;
@@ -10,6 +12,7 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -20,13 +23,11 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navegar para página de resultados de busca
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Buscar ao pressionar Enter (se já não estiver no formulário)
     if (e.key === 'Enter' && !(e.target instanceof HTMLTextAreaElement)) {
       if (searchQuery.trim()) {
         navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
@@ -34,27 +35,40 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
     }
   };
 
-  const currentYear = 2026;
+  const handleLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    navigate('/login');
+  };
+
+  const currentYear = new Date().getFullYear();
+
+  // Se não estiver autenticado, não mostra o Header
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-lg">
+    <header className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo e Título */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold flex items-center space-x-2">
-              <span className="text-blue-600 dark:text-blue-400">Ask Me</span>
-              <span className="inline-flex items-center space-x-1">
-                <span className="text-green-600 dark:text-green-400 animate-pulse">🎄</span>
-                <span className="text-red-500 dark:text-red-400 animate-bounce">🎅</span>
-                <span className="text-yellow-500 dark:text-yellow-400">✨</span>
-                <span className="text-blue-500 dark:text-blue-400 font-semibold">
-                  Feliz {currentYear}!
+            <Link to="/" className="flex items-center space-x-2">
+              <h1 className="text-xl font-bold flex items-center space-x-2">
+                <span className="text-blue-600 dark:text-blue-400">Ask Me</span>
+                <span className="inline-flex items-center space-x-1">
+                  <span className="text-green-600 dark:text-green-400 animate-pulse">🎄</span>
+                  <span className="text-red-500 dark:text-red-400 animate-bounce">🎅</span>
+                  <span className="text-yellow-500 dark:text-yellow-400">✨</span>
+                  <span className="text-blue-500 dark:text-blue-400 font-semibold">
+                    Feliz {currentYear}!
+                  </span>
+                  <span className="text-red-500 dark:text-red-400">🎆</span>
+                  <span className="text-yellow-500 dark:text-yellow-400">🎉</span>
                 </span>
-                <span className="text-red-500 dark:text-red-400">🎆</span>
-                <span className="text-yellow-500 dark:text-yellow-400">🎉</span>
-              </span>
-            </h1>
+              </h1>
+            </Link>
           </div>
 
           {/* BARRA DE PESQUISA NO MEIO */}
@@ -109,54 +123,87 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
             </button>
 
             {/* Notificações */}
-            <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <button 
+              onClick={() => console.log('Notificações')}
+              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
               <span className="text-lg">🔔</span>
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
             {/* Perfil do Usuário */}
-            <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <img 
-                  src="https://cdn.worldvectorlogo.com/logos/nuon.svg" 
-                  alt="Nuon"
-                  className="w-8 h-8 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
-                />
-                <span className={`transform transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}>
-                  ▼
-                </span>
-              </button>
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                  />
+                  <span className="hidden md:inline text-gray-700 dark:text-gray-300 font-medium">
+                    {user.name}
+                  </span>
+                  <span className={`transform transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </button>
 
-              {/* Dropdown do Usuário */}
-              {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-10">
-                  <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
-                    <p className="font-semibold text-gray-900 dark:text-white">Nuon</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">membro desde 2024</p>
-                  </div>
-                  <button 
-                    onClick={() => navigate('/profile')}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
-                  >
-                    📝 Meu Perfil
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
-                    ❓ Minhas Perguntas
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
-                    💬 Minhas Respostas
-                  </button>
-                  <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
-                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 transition-colors">
-                      🚪 Sair
+                {/* Dropdown do Usuário */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-10">
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                      <p className="font-semibold text-gray-900 dark:text-white">{user.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                    </div>
+                    <Link 
+                      to="/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      📝 Meu Perfil
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        navigate('/profile?tab=questions');
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      ❓ Minhas Perguntas
                     </button>
+                    <button 
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        navigate('/profile?tab=answers');
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      💬 Minhas Respostas
+                    </button>
+                    <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
+                      <button 
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          console.log('Configurações');
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                      >
+                        ⚙️ Configurações
+                      </button>
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400 transition-colors"
+                      >
+                        🚪 Sair
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
