@@ -2,23 +2,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDarkMode } from '../../hooks/useDarkMode';
 
 interface HeaderProps {
   onCreateQuestion: () => void;
 }
 
 export const Header = ({ onCreateQuestion }: HeaderProps) => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.classList.toggle('dark');
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,21 +108,23 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
               <span className="hidden md:inline">Fazer Pergunta</span>
             </button>
 
-            {/* Botão de Tema */}
+            {/* Botão de Tema - AGORA COM HOOK useDarkMode */}
             <button
-              onClick={toggleTheme}
+              onClick={toggleDarkMode}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              title={`Mudar para tema ${theme === 'light' ? 'escuro' : 'claro'}`}
+              title={`Mudar para tema ${isDarkMode ? 'claro' : 'escuro'}`}
             >
-              {theme === 'light' ? '🌙' : '☀️'}
+              {isDarkMode ? '☀️' : '🌙'}
             </button>
 
-            {/* Notificações */}
+            {/* Notificações - AGORA COM LINK PARA PÁGINA */}
             <button 
-              onClick={() => console.log('Notificações')}
+              onClick={() => navigate('/notifications')}
               className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="Notificações"
             >
               <span className="text-lg">🔔</span>
+              {/* Indicador de notificações não lidas (mock) */}
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
@@ -151,7 +148,7 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                   </span>
                 </button>
 
-                {/* Dropdown do Usuário */}
+                {/* Dropdown do Usuário - ATUALIZADO COM LINK PARA NOTIFICAÇÕES */}
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-10">
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
@@ -183,6 +180,14 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                     >
                       💬 Minhas Respostas
                     </button>
+                    {/* NOVO ITEM: NOTIFICAÇÕES */}
+                    <Link 
+                      to="/notifications"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      🔔 Notificações
+                    </Link>
                     <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
                       <button 
                         onClick={() => {
@@ -207,7 +212,7 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
           </div>
         </div>
 
-        {/* Menu Mobile */}
+        {/* Menu Mobile - ATUALIZADO COM LINK PARA NOTIFICAÇÕES */}
         <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
           {/* Barra de Pesquisa Mobile */}
           <form onSubmit={handleSearch} className="relative mb-4">
@@ -248,6 +253,12 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                 className="px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 Tags
+              </button>
+              <button 
+                onClick={() => navigate('/notifications')}
+                className="px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                🔔
               </button>
             </div>
           </div>

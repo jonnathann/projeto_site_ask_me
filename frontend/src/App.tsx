@@ -1,4 +1,4 @@
-// App.tsx - VERSÃO ATUALIZADA COM SETTINGS PAGE
+// App.tsx - VERSÃO ATUALIZADA COM NOTIFICATIONS PAGE
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -10,6 +10,7 @@ import { SearchPage } from './pages/SearchPage/SearchPage';
 import { TagsPage } from './pages/TagsPage/TagsPage';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage/SettingsPage';
+import { NotificationsPage } from './pages/User/NotificationsPage';
 import { LoginPage } from './pages/LoginPage/LoginPage';
 import { SignupPage } from './pages/SignupPage/SignupPage';
 import { LandingPage } from './pages/LandingPage/LandingPage';
@@ -83,6 +84,7 @@ function AppContent() {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/profile/:id" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
