@@ -1,3 +1,4 @@
+// QuestionFeed.tsx - VERSÃO CORRIGIDA
 import { useState } from 'react';
 import { QuestionCard } from './QuestionCard';
 import { Question } from '../../types/Question';
@@ -101,13 +102,14 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
   // Combina perguntas mockadas iniciais com perguntas criadas
   const allQuestions = [...(propQuestions || []), ...initialMockQuestions];
   
-  // Função para lidar com filtros
+  // DEBUG: Verificar IDs das perguntas
+  console.log('📊 Question IDs:', allQuestions.map(q => q.id));
+  console.log('📊 Related Question IDs:', relatedQuestions.map(q => q.id));
+
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
-    // Aqui você implementaria a lógica de filtragem
   };
 
-  // Função para navegar para uma pergunta relacionada
   const handleRelatedQuestionClick = (questionId: string) => {
     navigate(`/question/${questionId}`);
   };
@@ -168,10 +170,13 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
               </button>
             </div>
 
-            {/* Lista de Perguntas */}
+            {/* Lista de Perguntas - CORRIGIDO */}
             <div className="space-y-4">
               {allQuestions.map((question) => (
-                <QuestionCard key={question.id} question={question} />
+                <QuestionCard 
+                  key={`question-${question.id}`} // Chave única com prefixo
+                  question={question} 
+                />
               ))}
               
               {allQuestions.length === 0 && (
@@ -194,7 +199,7 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
           </div>
         </div>
 
-        {/* Sidebar de Perguntas Relacionadas (direita) */}
+        {/* Sidebar de Perguntas Relacionadas (direita) - CORRIGIDO */}
         <div className="w-80 flex-shrink-0">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-8">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
@@ -204,7 +209,7 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
             <div className="space-y-4">
               {relatedQuestions.map((question) => (
                 <div 
-                  key={question.id} 
+                  key={`related-${question.id}`} // Chave única com prefixo
                   onClick={() => handleRelatedQuestionClick(question.id)}
                   className="p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer border border-gray-100 dark:border-gray-600"
                 >
@@ -216,9 +221,9 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
                     <span>{question.upvotes} 👍</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {question.tags.slice(0, 2).map((tag) => (
+                    {question.tags.slice(0, 2).map((tag, tagIndex) => (
                       <span 
-                        key={tag}
+                        key={`tag-${question.id}-${tag}-${tagIndex}`} // Chave única para tags
                         className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded"
                       >
                         #{tag}
