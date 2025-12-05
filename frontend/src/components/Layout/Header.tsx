@@ -148,13 +148,15 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                   </span>
                 </button>
 
-                {/* Dropdown do Usuário - ATUALIZADO COM LINK PARA NOTIFICAÇÕES */}
+                {/* Dropdown do Usuário - ATUALIZADO COM TODOS OS LINKS */}
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-10">
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                       <p className="font-semibold text-gray-900 dark:text-white">{user.name}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                     </div>
+                    
+                    {/* Seção 1: Perfil e Conteúdo */}
                     <Link 
                       to="/profile"
                       onClick={() => setUserMenuOpen(false)}
@@ -180,7 +182,24 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                     >
                       💬 Minhas Respostas
                     </button>
-                    {/* NOVO ITEM: NOTIFICAÇÕES */}
+                    
+                    {/* Seção 2: Rede Social */}
+                    <Link 
+                      to="/following"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      👥 Minha Rede
+                    </Link>
+                    
+                    {/* Seção 3: Recursos Pessoais */}
+                    <Link 
+                      to="/bookmarks"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      🔖 Perguntas Salvas
+                    </Link>
                     <Link 
                       to="/notifications"
                       onClick={() => setUserMenuOpen(false)}
@@ -188,6 +207,8 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                     >
                       🔔 Notificações
                     </Link>
+                    
+                    {/* Seção 4: Configurações */}
                     <div className="border-t border-gray-100 dark:border-gray-700 mt-2 pt-2">
                       <button 
                         onClick={() => {
@@ -212,7 +233,7 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
           </div>
         </div>
 
-        {/* Menu Mobile - ATUALIZADO COM LINK PARA NOTIFICAÇÕES */}
+        {/* Menu Mobile - ATUALIZADO COM TODOS OS LINKS */}
         <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
           {/* Barra de Pesquisa Mobile */}
           <form onSubmit={handleSearch} className="relative mb-4">
@@ -260,6 +281,28 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
               >
                 🔔
               </button>
+              <button 
+                onClick={() => navigate('/bookmarks')}
+                className="px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Perguntas Salvas"
+              >
+                🔖
+              </button>
+              <button 
+                onClick={() => navigate('/following')}
+                className="px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Minha Rede"
+              >
+                👥
+              </button>
+              
+              <button 
+                onClick={() => navigate('/badges')}
+                className="px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Badges">
+                🏆
+              </button>
+              
             </div>
           </div>
         </div>

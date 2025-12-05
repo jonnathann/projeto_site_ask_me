@@ -1,4 +1,4 @@
-// App.tsx - VERSÃO ATUALIZADA COM NOTIFICATIONS PAGE
+// App.tsx - VERSÃO ATUALIZADA COM USERS PAGE
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -11,10 +11,15 @@ import { TagsPage } from './pages/TagsPage/TagsPage';
 import { ProfilePage } from './pages/ProfilePage/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage/SettingsPage';
 import { NotificationsPage } from './pages/User/NotificationsPage';
+import { BookmarksPage } from './pages/User/BookmarksPage';
+import { FollowingPage } from './pages/User/FollowingPage';
+import { UsersPage } from './pages/Community/UsersPage';
 import { LoginPage } from './pages/LoginPage/LoginPage';
 import { SignupPage } from './pages/SignupPage/SignupPage';
 import { LandingPage } from './pages/LandingPage/LandingPage';
 import { Question } from './types/Question';
+import { BadgesPage } from './pages/Community/BadgesPage';
+
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -85,6 +90,10 @@ function AppContent() {
         <Route path="/profile/:id" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+        <Route path="/bookmarks" element={<ProtectedRoute><BookmarksPage /></ProtectedRoute>} />
+        <Route path="/following" element={<ProtectedRoute><FollowingPage /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+        <Route path="/badges" element={<ProtectedRoute><BadgesPage /></ProtectedRoute>} />
         
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
