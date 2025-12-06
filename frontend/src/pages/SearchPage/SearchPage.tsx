@@ -1,107 +1,16 @@
-// pages/SearchPage/SearchPage.tsx
+// src/pages/SearchPage/SearchPage.tsx
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SearchFilters, SearchResult, SearchSort, TimeRange } from '../../types/Search';
 import { QuestionCard } from '../../components/Question/QuestionCard';
-import { Tag } from '../../components/Tag/Tag';
+import { popularTags } from '../../data/mock/tags';
+import { initialMockQuestions } from '../../data/mock/questions';
 
 // Dados mockados para busca
-const mockSearchResults: SearchResult[] = [
-  {
-    id: '1',
-    title: 'Como configurar React com TypeScript do zero?',
-    content: 'Quero começar um novo projeto React com TypeScript mas não sei por onde começar...',
-    author: {
-      id: 'user1',
-      name: 'DevReact',
-      avatar: 'https://ui-avatars.com/api/?name=DevReact&background=3B82F6&color=fff'
-    },
-    createdAt: '2024-01-10',
-    answersCount: 12,
-    upvotes: 45,
-    tags: ['react', 'typescript', 'web', 'frontend'],
-    isAnswered: true,
-    relevance: 95
-  },
-  {
-    id: '2',
-    title: 'Erro ao usar useState com TypeScript no React 18',
-    content: 'Estou recebendo um erro de tipo quando tento usar useState...',
-    author: {
-      id: 'user2',
-      name: 'TypeScriptFan',
-      avatar: 'https://ui-avatars.com/api/?name=TSFan&background=10B981&color=fff'
-    },
-    createdAt: '2024-01-08',
-    answersCount: 8,
-    upvotes: 23,
-    tags: ['react', 'typescript', 'hooks', 'erro'],
-    isAnswered: true,
-    relevance: 87
-  },
-  {
-    id: '3',
-    title: 'Melhor forma de gerenciar estado global em React?',
-    content: 'Estou em dúvida entre Redux, Context API e Zustand...',
-    author: {
-      id: 'user3',
-      name: 'StateMaster',
-      avatar: 'https://ui-avatars.com/api/?name=StateMaster&background=8B5CF6&color=fff'
-    },
-    createdAt: '2024-01-05',
-    answersCount: 25,
-    upvotes: 67,
-    tags: ['react', 'redux', 'context', 'zustand', 'state'],
-    isAnswered: false,
-    relevance: 76
-  },
-  {
-    id: '4',
-    title: 'Como testar componentes React com Jest e Testing Library?',
-    content: 'Preciso escrever testes para meus componentes mas não sei por onde começar...',
-    author: {
-      id: 'user4',
-      name: 'TestGuy',
-      avatar: 'https://ui-avatars.com/api/?name=TestGuy&background=EF4444&color=fff'
-    },
-    createdAt: '2024-01-03',
-    answersCount: 15,
-    upvotes: 34,
-    tags: ['react', 'jest', 'testing', 'frontend'],
-    isAnswered: true,
-    relevance: 68
-  },
-  {
-    id: '5',
-    title: 'Diferença entre useEffect e useLayoutEffect?',
-    content: 'Não estou entendendo quando usar cada um desses hooks...',
-    author: {
-      id: 'user5',
-      name: 'HookLearner',
-      avatar: 'https://ui-avatars.com/api/?name=HookLearner&background=F59E0B&color=fff'
-    },
-    createdAt: '2024-01-01',
-    answersCount: 18,
-    upvotes: 42,
-    tags: ['react', 'hooks', 'useeffect', 'uselayouteffect'],
-    isAnswered: true,
-    relevance: 65
-  }
-];
-
-// Tags populares para sugestão
-const popularTags = [
-  { name: 'react', count: 1245, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
-  { name: 'typescript', count: 892, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
-  { name: 'javascript', count: 2345, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
-  { name: 'nodejs', count: 567, color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
-  { name: 'nextjs', count: 432, color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' },
-  { name: 'tailwind', count: 789, color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300' },
-  { name: 'web', count: 1123, color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300' },
-  { name: 'mobile', count: 456, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
-  { name: 'games', count: 678, color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' },
-  { name: 'estudos', count: 345, color: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300' },
-];
+const mockSearchResults: SearchResult[] = initialMockQuestions.map(q => ({
+  ...q,
+  relevance: Math.floor(Math.random() * 30) + 70 // Adiciona relevância aleatória
+}));
 
 export const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();

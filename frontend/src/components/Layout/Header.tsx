@@ -9,7 +9,7 @@ interface HeaderProps {
 }
 
 export const Header = ({ onCreateQuestion }: HeaderProps) => {
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const { darkMode, toggleDarkMode } = useDarkMode(); // CORRIGIDO: darkMode em vez de isDarkMode
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -108,23 +108,22 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
               <span className="hidden md:inline">Fazer Pergunta</span>
             </button>
 
-            {/* Botão de Tema - AGORA COM HOOK useDarkMode */}
+            {/* Botão de Tema - CORRIGIDO: usando darkMode */}
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              title={`Mudar para tema ${isDarkMode ? 'claro' : 'escuro'}`}
+              title={`Mudar para tema ${darkMode ? 'claro' : 'escuro'}`} // CORRIGIDO
             >
-              {isDarkMode ? '☀️' : '🌙'}
+              {darkMode ? '☀️' : '🌙'} {/* CORRIGIDO */}
             </button>
 
-            {/* Notificações - AGORA COM LINK PARA PÁGINA */}
+            {/* Notificações */}
             <button 
               onClick={() => navigate('/notifications')}
               className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               title="Notificações"
             >
               <span className="text-lg">🔔</span>
-              {/* Indicador de notificações não lidas (mock) */}
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
@@ -148,7 +147,7 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
                   </span>
                 </button>
 
-                {/* Dropdown do Usuário - ATUALIZADO COM TODOS OS LINKS */}
+                {/* Dropdown do Usuário */}
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-10">
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
@@ -233,7 +232,7 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
           </div>
         </div>
 
-        {/* Menu Mobile - ATUALIZADO COM TODOS OS LINKS */}
+        {/* Menu Mobile */}
         <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
           {/* Barra de Pesquisa Mobile */}
           <form onSubmit={handleSearch} className="relative mb-4">
@@ -295,14 +294,13 @@ export const Header = ({ onCreateQuestion }: HeaderProps) => {
               >
                 👥
               </button>
-              
               <button 
                 onClick={() => navigate('/badges')}
                 className="px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                title="Badges">
+                title="Badges"
+              >
                 🏆
               </button>
-              
             </div>
           </div>
         </div>

@@ -1,107 +1,15 @@
+// src/pages/QuestionPage/QuestionPage.tsx
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Question, Answer } from '../../types/Question';
 import { AnswerCard } from '../../components/Question/AnswerCard';
-
-type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry' | null;
-
-const reactions = [
-  { type: 'like' as ReactionType, emoji: '👍', label: 'Curtir', color: 'text-blue-500' },
-  { type: 'love' as ReactionType, emoji: '❤️', label: 'Amei', color: 'text-red-500' },
-  { type: 'haha' as ReactionType, emoji: '😂', label: 'Haha', color: 'text-yellow-500' },
-  { type: 'wow' as ReactionType, emoji: '😮', label: 'Uau', color: 'text-yellow-500' },
-  { type: 'sad' as ReactionType, emoji: '😢', label: 'Triste', color: 'text-yellow-500' },
-  { type: 'angry' as ReactionType, emoji: '😠', label: 'Bravo', color: 'text-red-600' },
-];
-
-// Emojis para o formulário de resposta
-const emojiCategories = {
-  "Carinhas": ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠"],
-  "Gestos": ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏"],
-  "Objetos": ["💯", "💢", "💬", "💭", "💤", "💮", "💥", "💫", "💦", "💨", "🕳️", "💣", "💬", "👁️‍🗨️", "🗨️", "🗯️", "💭", "💤"],
-  "Símbolos": ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "☮️", "✝️", "☪️", "🕉️", "☸️", "✡️", "🔯", "🕎", "☯️", "☦️", "🛐", "⛎", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓", "🆔", "⚛️", "🉑", "☢️", "☣️", "📴", "📳", "🈶", "🈚", "🈸", "🈺", "🈷️", "✴️", "🆚", "💮", "🉐", "㊙️", "㊗️", "🈴", "🈵", "🈹", "🈲", "🅰️", "🅱️", "🆎", "🆑", "🅾️", "🆘", "❌", "⭕", "🛑", "⛔", "📛", "🚫", "💯", "💢", "♨️", "🚷", "🚯", "🚳", "🚱", "🔞", "📵", "🚭"]
-};
+import { useReactions } from '../../hooks/useReactions';
+import { useEmojiPicker } from '../../hooks/useEmojiPicker';
+import { REACTIONS, getReactionByType } from '../../data/constants/reactions';
+import { mockQuestionDetails, relatedQuestions } from '../../data/mock/questions';
 
 // Dados mockados para a página individual
-const mockQuestion: Question = {
-  id: '1',
-  title: 'De zero a dez o quanto vcs gostam do super nintendo?',
-  content: 'Estou fazendo uma pesquisa sobre consoles clássicos e queria saber a opinião de vocês sobre o Super Nintendo. Eu particularmente dou 9/10 - os gráficos eram incríveis para a época e a biblioteca de jogos é fantástica! Qual nota vocês dariam de 0 a 10?',
-  author: { 
-    id: '1', 
-    name: 'Nuon',
-    avatar: 'https://cdn.worldvectorlogo.com/logos/nuon.svg'
-  },
-  createdAt: '2024-01-15',
-  answersCount: 3,
-  upvotes: 15,
-  tags: ['games', 'retro', 'super-nintendo', 'nostalgia'],
-  isAnswered: true,
-  views: 142,
-  answers: [
-    {
-      id: '1',
-      content: 'Eu dou 10/10 fácil! O Super Nintendo foi minha infância toda. Jogos como Super Mario World, Donkey Kong Country e Zelda: A Link to the Past são atemporais. A Nintendo acertou em cheio com esse console!',
-      author: { id: '4', name: 'GameLover' },
-      createdAt: '2024-01-15',
-      upvotes: 8,
-      isAccepted: true
-    },
-    {
-      id: '2',
-      content: 'Daria 8/10. Os jogos são incríveis, mas acho que o controle poderia ser mais ergonômico. Fora isso, é um console fantástico que envelheceu muito bem!',
-      author: { id: '5', name: 'RetroPlayer' },
-      createdAt: '2024-01-16',
-      upvotes: 5,
-      isAccepted: false
-    },
-    {
-      id: '3',
-      content: '10/10 sem dúvidas! Até hoje jogo Super Metroid e Chrono Trigger. A qualidade dos RPGs da era SNES é insuperável na minha opinião.',
-      author: { id: '6', name: 'RPGMaster' },
-      createdAt: '2024-01-17',
-      upvotes: 12,
-      isAccepted: false
-    }
-  ]
-};
-
-// Perguntas relacionadas (mock)
-const relatedQuestions: Question[] = [
-  {
-    id: '4',
-    title: 'Qual seu jogo de SNES favorito?',
-    content: 'Me conta qual jogo do Super Nintendo marcou mais sua infância!',
-    author: { id: '7', name: 'Gamer123' },
-    createdAt: '2024-01-12',
-    answersCount: 5,
-    upvotes: 18,
-    tags: ['games', 'snes', 'nostalgia'],
-    isAnswered: false
-  },
-  {
-    id: '5',
-    title: 'Vale a pena comprar um SNES hoje em dia?',
-    content: 'Tô pensando em comprar um Super Nintendo original, mas não sei se vale a pena...',
-    author: { id: '8', name: 'RetroCollector' },
-    createdAt: '2024-01-11',
-    answersCount: 7,
-    upvotes: 12,
-    tags: ['games', 'retro', 'coleção'],
-    isAnswered: true
-  },
-  {
-    id: '6',
-    title: 'Como conectar SNES em TV moderna?',
-    content: 'Alguém sabe como conectar um Super Nintendo em uma TV LED moderna?',
-    author: { id: '9', name: 'TechHelper' },
-    createdAt: '2024-01-10',
-    answersCount: 3,
-    upvotes: 9,
-    tags: ['games', 'tecnologia', 'snes'],
-    isAnswered: false
-  }
-];
+const mockQuestion: Question = mockQuestionDetails[0];
 
 export const QuestionPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -110,35 +18,27 @@ export const QuestionPage = () => {
   const [newAnswer, setNewAnswer] = useState('');
   const [answers, setAnswers] = useState<Answer[]>(mockQuestion.answers || []);
   
-  // States para reactions da PERGUNTA
-  const [questionUpvotes, setQuestionUpvotes] = useState(question.upvotes);
-  const [questionReaction, setQuestionReaction] = useState<ReactionType>(null);
-  const [showQuestionReactions, setShowQuestionReactions] = useState(false);
+  // Usando hooks personalizados
+  const { 
+    count: questionUpvotes, 
+    userReaction: questionReaction, 
+    showPicker: showQuestionReactions, 
+    handleReaction: handleQuestionReaction, 
+    setShowPicker: setShowQuestionReactions 
+  } = useReactions({ 
+    initialCount: question.upvotes 
+  });
 
-  // States para o formulário de resposta
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeEmojiCategory, setActiveEmojiCategory] = useState("Carinhas");
-
-  const handleQuestionReaction = (reactionType: ReactionType) => {
-    const previousReaction = questionReaction;
-    
-    if (previousReaction && previousReaction !== reactionType) {
-      setQuestionUpvotes(questionUpvotes - 1);
-    }
-    
-    if (reactionType && reactionType !== previousReaction) {
-      setQuestionUpvotes(questionUpvotes + 1);
-    }
-    
-    if (reactionType === previousReaction) {
-      setQuestionUpvotes(questionUpvotes - 1);
-      setQuestionReaction(null);
-    } else {
-      setQuestionReaction(reactionType);
-    }
-    
-    setShowQuestionReactions(false);
-  };
+  const {
+    showPicker: showEmojiPicker,
+    activeCategory,
+    togglePicker: toggleEmojiPicker,
+    hidePicker: hideEmojiPicker,
+    changeCategory,
+    insertEmoji,
+    getEmojis,
+    getCategories
+  } = useEmojiPicker();
 
   const handleAcceptAnswer = (answerId: string) => {
     setAnswers(answers.map(answer => ({
@@ -152,7 +52,7 @@ export const QuestionPage = () => {
     if (!newAnswer.trim()) return;
 
     const newAnswerObj: Answer = {
-      id: Date.now().toString(),
+      id: `answer-${Date.now()}`,
       content: newAnswer,
       author: { id: 'current-user', name: 'Você' },
       createdAt: new Date().toISOString().split('T')[0],
@@ -162,14 +62,14 @@ export const QuestionPage = () => {
 
     setAnswers([...answers, newAnswerObj]);
     setNewAnswer('');
-    setShowEmojiPicker(false);
+    hideEmojiPicker();
   };
 
-  const insertEmoji = (emoji: string) => {
+  const handleInsertEmoji = (emoji: string) => {
     setNewAnswer(prev => prev + emoji);
   };
 
-  const currentQuestionReaction = reactions.find(r => r.type === questionReaction);
+  const currentQuestionReaction = getReactionByType(questionReaction);
   const acceptedAnswer = answers.find(answer => answer.isAccepted);
   const otherAnswers = answers.filter(answer => !answer.isAccepted);
 
@@ -269,7 +169,7 @@ export const QuestionPage = () => {
                         onMouseEnter={() => setShowQuestionReactions(true)}
                         onMouseLeave={() => setTimeout(() => setShowQuestionReactions(false), 300)}
                       >
-                        {reactions.map((reaction) => (
+                        {REACTIONS.map((reaction) => (
                           <button
                             key={reaction.type}
                             onClick={() => handleQuestionReaction(reaction.type)}
@@ -311,7 +211,7 @@ export const QuestionPage = () => {
                   {/* Botão de Emoji */}
                   <button
                     type="button"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    onClick={toggleEmojiPicker}
                     className="absolute bottom-3 right-3 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                     title="Inserir emoji"
                   >
@@ -324,12 +224,12 @@ export const QuestionPage = () => {
                   <div className="mt-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-4">
                     {/* Categorias de Emojis */}
                     <div className="flex space-x-2 mb-3 border-b border-gray-200 dark:border-gray-600 pb-2">
-                      {Object.keys(emojiCategories).map(category => (
+                      {getCategories().map((category) => (
                         <button
                           key={category}
-                          onClick={() => setActiveEmojiCategory(category)}
+                          onClick={() => changeCategory(category)}
                           className={`px-3 py-1 text-xs rounded transition-colors ${
-                            activeEmojiCategory === category
+                            activeCategory === category
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                           }`}
@@ -341,11 +241,11 @@ export const QuestionPage = () => {
 
                     {/* Grid de Emojis */}
                     <div className="grid grid-cols-8 gap-2 max-h-40 overflow-y-auto">
-                      {emojiCategories[activeEmojiCategory as keyof typeof emojiCategories]?.map((emoji, index) => (
+                      {getEmojis().map((emoji, index) => (
                         <button
                           key={index}
                           type="button"
-                          onClick={() => insertEmoji(emoji)}
+                          onClick={() => handleInsertEmoji(emoji)}
                           className="text-lg hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-1 transition-colors"
                         >
                           {emoji}

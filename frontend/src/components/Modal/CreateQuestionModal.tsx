@@ -1,18 +1,13 @@
+// src/components/Modal/CreateQuestionModal.tsx
 import { useState, useRef } from 'react';
+import { useEmojiPicker } from '../../hooks/useEmojiPicker';
+import { SUGGESTED_TAGS } from '../../data/constants/app';
 
 interface CreateQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (question: { title: string; content: string; tags: string[] }) => void;
 }
-
-// Emojis para o formulário de pergunta (mesmo das respostas)
-const emojiCategories = {
-  "Carinhas": ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠"],
-  "Gestos": ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏"],
-  "Objetos": ["💯", "💢", "💬", "💭", "💤", "💮", "💥", "💫", "💦", "💨", "🕳️", "💣", "💬", "👁️‍🗨️", "🗨️", "🗯️", "💭", "💤"],
-  "Símbolos": ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "☮️", "✝️", "☪️", "🕉️", "☸️", "✡️", "🔯", "🕎", "☯️", "☦️", "🛐", "⛎", "♈", "♉", "♊", "♋", "♌", "♍", "♎", "♏", "♐", "♑", "♒", "♓", "🆔", "⚛️", "🉑", "☢️", "☣️", "📴", "📳", "🈶", "🈚", "🈸", "🈺", "🈷️", "✴️", "🆚", "💮", "🉐", "㊙️", "㊗️", "🈴", "🈵", "🈹", "🈲", "🅰️", "🅱️", "🆎", "🆑", "🅾️", "🆘", "❌", "⭕", "🛑", "⛔", "📛", "🚫", "💯", "💢", "♨️", "🚷", "🚯", "🚳", "🚱", "🔞", "📵", "🚭"]
-};
 
 export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestionModalProps) => {
   const [title, setTitle] = useState('');
@@ -21,17 +16,19 @@ export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestio
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Estados para o seletor de emojis
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeEmojiCategory, setActiveEmojiCategory] = useState("Carinhas");
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  // Usando hook personalizado para emoji picker
+  const {
+    showPicker: showEmojiPicker,
+    activeCategory,
+    togglePicker: toggleEmojiPicker,
+    hidePicker: hideEmojiPicker,
+    changeCategory,
+    getEmojis,
+    getCategories,
+    insertEmoji
+  } = useEmojiPicker();
 
-  // Tags populares sugeridas
-  const popularTags = [
-    'programação', 'react', 'javascript', 'typescript', 'nodejs',
-    'web', 'mobile', 'design', 'carreira', 'dúvida', 'ajuda',
-    'tecnologia', 'games', 'estudos', 'trabalho'
-  ];
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleAddTag = (tag: string) => {
     if (tag.trim() && !tags.includes(tag.trim()) && tags.length < 5) {
@@ -45,16 +42,21 @@ export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestio
   };
 
   // Função para inserir emoji na descrição
-  const insertEmoji = (emoji: string) => {
-    const cursorPosition = contentTextareaRef.current?.selectionStart || content.length;
-    const newContent = content.slice(0, cursorPosition) + emoji + content.slice(cursorPosition);
-    setContent(newContent);
-    
-    // Focar de volta no textarea e posicionar cursor após o emoji
-    setTimeout(() => {
-      contentTextareaRef.current?.focus();
-      contentTextareaRef.current?.setSelectionRange(cursorPosition + emoji.length, cursorPosition + emoji.length);
-    }, 0);
+  const handleInsertEmoji = (emoji: string) => {
+    if (contentTextareaRef.current) {
+      const cursorPosition = contentTextareaRef.current.selectionStart;
+      const newContent = insertEmoji(content, emoji, cursorPosition);
+      setContent(newContent);
+      
+      // Focar de volta no textarea e posicionar cursor após o emoji
+      setTimeout(() => {
+        contentTextareaRef.current?.focus();
+        contentTextareaRef.current?.setSelectionRange(
+          cursorPosition + emoji.length, 
+          cursorPosition + emoji.length
+        );
+      }, 0);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,10 +163,10 @@ export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestio
                     required
                   />
                   
-                  {/* Botão de Emoji no canto inferior direito - IGUAL ÀS RESPOSTAS */}
+                  {/* Botão de Emoji no canto inferior direito */}
                   <button
                     type="button"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    onClick={toggleEmojiPicker}
                     className="absolute bottom-3 right-3 p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                     title="Inserir emoji"
                   >
@@ -172,17 +174,17 @@ export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestio
                   </button>
                 </div>
 
-                {/* Seletor de Emojis (igual ao das respostas) */}
+                {/* Seletor de Emojis */}
                 {showEmojiPicker && (
                   <div className="mt-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-4">
                     {/* Categorias de Emojis */}
                     <div className="flex flex-wrap gap-2 mb-3 border-b border-gray-200 dark:border-gray-600 pb-2">
-                      {Object.keys(emojiCategories).map(category => (
+                      {getCategories().map(category => (
                         <button
                           key={category}
-                          onClick={() => setActiveEmojiCategory(category)}
+                          onClick={() => changeCategory(category)}
                           className={`px-3 py-1 text-xs rounded transition-colors ${
-                            activeEmojiCategory === category
+                            activeCategory === category
                               ? 'bg-blue-500 text-white'
                               : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                           }`}
@@ -194,11 +196,11 @@ export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestio
 
                     {/* Grid de Emojis */}
                     <div className="grid grid-cols-8 gap-2 max-h-40 overflow-y-auto">
-                      {emojiCategories[activeEmojiCategory as keyof typeof emojiCategories]?.map((emoji, index) => (
+                      {getEmojis().map((emoji, index) => (
                         <button
                           key={index}
                           type="button"
-                          onClick={() => insertEmoji(emoji)}
+                          onClick={() => handleInsertEmoji(emoji)}
                           className="text-lg hover:bg-gray-100 dark:hover:bg-gray-600 rounded p-1 transition-colors"
                         >
                           {emoji}
@@ -272,7 +274,7 @@ export const CreateQuestionModal = ({ isOpen, onClose, onSubmit }: CreateQuestio
                     Tags populares:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {popularTags.map((tag) => (
+                    {SUGGESTED_TAGS.map((tag) => (
                       <button
                         key={tag}
                         type="button"

@@ -1,6 +1,9 @@
+// src/components/Question/QuestionCard.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Question } from '../../types/Question';
+import { useReactions } from '../../hooks/useReactions';
+import { REACTIONS, getReactionByType } from '../../data/constants/reactions';
 
 interface QuestionCardProps {
   question: Question;
@@ -23,78 +26,28 @@ const getInitials = (name: string) => {
   return name.charAt(0).toUpperCase();
 };
 
-// Tipos de reactions disponíveis
-type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry' | null;
-
-const reactions = [
-  { type: 'like' as ReactionType, emoji: '👍', label: 'Curtir', color: 'text-blue-500' },
-  { type: 'love' as ReactionType, emoji: '❤️', label: 'Amei', color: 'text-red-500' },
-  { type: 'haha' as ReactionType, emoji: '😂', label: 'Haha', color: 'text-yellow-500' },
-  { type: 'wow' as ReactionType, emoji: '😮', label: 'Uau', color: 'text-yellow-500' },
-  { type: 'sad' as ReactionType, emoji: '😢', label: 'Triste', color: 'text-yellow-500' },
-  { type: 'angry' as ReactionType, emoji: '😠', label: 'Bravo', color: 'text-red-600' },
-];
-
 export const QuestionCard = ({ question }: QuestionCardProps) => {
   const navigate = useNavigate();
   const avatarColor = getAvatarColor(question.author.name);
   const initials = getInitials(question.author.name);
   
-  // Estados para reactions
-  const [upvotes, setUpvotes] = useState(question.upvotes);
-  const [userReaction, setUserReaction] = useState<ReactionType>(null);
-  const [showReactions, setShowReactions] = useState(false);
-  const [reactionCounts, setReactionCounts] = useState({
-    like: Math.floor(question.upvotes * 0.6),
-    love: Math.floor(question.upvotes * 0.2),
-    haha: Math.floor(question.upvotes * 0.1),
-    wow: Math.floor(question.upvotes * 0.05),
-    sad: Math.floor(question.upvotes * 0.03),
-    angry: Math.floor(question.upvotes * 0.02),
+  // Usando hook personalizado para reactions
+  const { 
+    count: upvotes, 
+    userReaction, 
+    showPicker, 
+    handleReaction, 
+    setShowPicker 
+  } = useReactions({ 
+    initialCount: question.upvotes 
   });
-
-  const handleReaction = (reactionType: ReactionType) => {
-    const previousReaction = userReaction;
-    
-    // Remove a reaction anterior se existir
-    if (previousReaction && previousReaction !== reactionType) {
-      setReactionCounts(prev => ({
-        ...prev,
-        [previousReaction]: prev[previousReaction] - 1
-      }));
-      setUpvotes(upvotes - 1);
-    }
-    
-    // Adiciona a nova reaction
-    if (reactionType && reactionType !== previousReaction) {
-      setReactionCounts(prev => ({
-        ...prev,
-        [reactionType]: prev[reactionType] + 1
-      }));
-      setUpvotes(upvotes + 1);
-    }
-    
-    // Se clicar na mesma reaction, remove
-    if (reactionType === previousReaction) {
-      setReactionCounts(prev => ({
-        ...prev,
-        [reactionType]: prev[reactionType] - 1
-      }));
-      setUpvotes(upvotes - 1);
-      setUserReaction(null);
-    } else {
-      setUserReaction(reactionType);
-    }
-    
-    setShowReactions(false);
-  };
 
   const handleQuestionClick = () => {
     navigate(`/question/${question.id}`);
   };
 
   // Encontra a reaction atual do usuário
-  const currentReaction = reactions.find(r => r.type === userReaction);
+  const currentReaction = getReactionByType(userReaction);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-gray-900 p-6 hover:shadow-lg dark:hover:shadow-gray-800 transition-all">
@@ -155,8 +108,8 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
           {/* Botão de Reactions */}
           <div className="relative">
             <button 
-              onMouseEnter={() => setShowReactions(true)}
-              onMouseLeave={() => setTimeout(() => setShowReactions(false), 300)}
+              onMouseEnter={() => setShowPicker(true)}
+              onMouseLeave={() => setTimeout(() => setShowPicker(false), 300)}
               className={`flex items-center space-x-1 p-2 rounded-lg transition-all ${
                 userReaction 
                   ? `${currentReaction?.color} bg-gray-100 dark:bg-gray-700` 
@@ -174,13 +127,13 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
             </button>
 
             {/* Paleta de Reactions (aparece ao hover) */}
-            {showReactions && (
+            {showPicker && (
               <div 
                 className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 p-2 flex space-x-1 z-10"
-                onMouseEnter={() => setShowReactions(true)}
-                onMouseLeave={() => setTimeout(() => setShowReactions(false), 300)}
+                onMouseEnter={() => setShowPicker(true)}
+                onMouseLeave={() => setTimeout(() => setShowPicker(false), 300)}
               >
-                {reactions.map((reaction) => (
+                {REACTIONS.map((reaction) => (
                   <button
                     key={reaction.type}
                     onClick={() => handleReaction(reaction.type)}
@@ -211,8 +164,8 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
       {/* Contadores de Reactions (opcional - estilo Facebook) */}
       <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
         <div className="flex -space-x-1">
-          {reactions
-            .filter(reaction => reactionCounts[reaction.type] > 0)
+          {REACTIONS
+            .filter(reaction => reaction.type && Math.random() > 0.5) // Simulação
             .slice(0, 3)
             .map(reaction => (
               <span key={reaction.type} className="text-sm">

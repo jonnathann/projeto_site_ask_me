@@ -1,16 +1,7 @@
-import { useState } from 'react';
+// src/components/Question/AnswerCard.tsx
 import { Answer } from '../../types/Question';
-
-type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry' | null;
-
-const reactions = [
-  { type: 'like' as ReactionType, emoji: '👍', label: 'Curtir', color: 'text-blue-500' },
-  { type: 'love' as ReactionType, emoji: '❤️', label: 'Amei', color: 'text-red-500' },
-  { type: 'haha' as ReactionType, emoji: '😂', label: 'Haha', color: 'text-yellow-500' },
-  { type: 'wow' as ReactionType, emoji: '😮', label: 'Uau', color: 'text-yellow-500' },
-  { type: 'sad' as ReactionType, emoji: '😢', label: 'Triste', color: 'text-yellow-500' },
-  { type: 'angry' as ReactionType, emoji: '😠', label: 'Bravo', color: 'text-red-600' },
-];
+import { useReactions } from '../../hooks/useReactions';
+import { REACTIONS, getReactionByType } from '../../data/constants/reactions';
 
 interface AnswerCardProps {
   answer: Answer;
@@ -20,32 +11,18 @@ interface AnswerCardProps {
 }
 
 export const AnswerCard = ({ answer, isAccepted, onAccept, canAccept = false }: AnswerCardProps) => {
-  const [upvotes, setUpvotes] = useState(answer.upvotes);
-  const [userReaction, setUserReaction] = useState<ReactionType>(null);
-  const [showReactions, setShowReactions] = useState(false);
+  // Usando hook personalizado para reactions
+  const { 
+    count: upvotes, 
+    userReaction, 
+    showPicker, 
+    handleReaction, 
+    setShowPicker 
+  } = useReactions({ 
+    initialCount: answer.upvotes 
+  });
 
-  const handleReaction = (reactionType: ReactionType) => {
-    const previousReaction = userReaction;
-    
-    if (previousReaction && previousReaction !== reactionType) {
-      setUpvotes(upvotes - 1);
-    }
-    
-    if (reactionType && reactionType !== previousReaction) {
-      setUpvotes(upvotes + 1);
-    }
-    
-    if (reactionType === previousReaction) {
-      setUpvotes(upvotes - 1);
-      setUserReaction(null);
-    } else {
-      setUserReaction(reactionType);
-    }
-    
-    setShowReactions(false);
-  };
-
-  const currentReaction = reactions.find(r => r.type === userReaction);
+  const currentReaction = getReactionByType(userReaction);
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg border-2 p-6 transition-all ${
@@ -83,8 +60,8 @@ export const AnswerCard = ({ answer, isAccepted, onAccept, canAccept = false }: 
           {/* Reactions */}
           <div className="relative">
             <button 
-              onMouseEnter={() => setShowReactions(true)}
-              onMouseLeave={() => setTimeout(() => setShowReactions(false), 300)}
+              onMouseEnter={() => setShowPicker(true)}
+              onMouseLeave={() => setTimeout(() => setShowPicker(false), 300)}
               className={`flex items-center space-x-1 p-2 rounded-lg transition-all ${
                 userReaction 
                   ? `${currentReaction?.color} bg-gray-100 dark:bg-gray-700` 
@@ -102,13 +79,13 @@ export const AnswerCard = ({ answer, isAccepted, onAccept, canAccept = false }: 
             </button>
 
             {/* Paleta de Reactions */}
-            {showReactions && (
+            {showPicker && (
               <div 
                 className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 p-2 flex space-x-1 z-10"
-                onMouseEnter={() => setShowReactions(true)}
-                onMouseLeave={() => setTimeout(() => setShowReactions(false), 300)}
+                onMouseEnter={() => setShowPicker(true)}
+                onMouseLeave={() => setTimeout(() => setShowPicker(false), 300)}
               >
-                {reactions.map((reaction) => (
+                {REACTIONS.map((reaction) => (
                   <button
                     key={reaction.type}
                     onClick={() => handleReaction(reaction.type)}

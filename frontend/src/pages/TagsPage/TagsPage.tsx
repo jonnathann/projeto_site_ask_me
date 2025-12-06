@@ -1,212 +1,30 @@
-// pages/TagsPage/TagsPage.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tag, TagSort } from '../../types/Tag';
-
-// Dados mockados de tags
-const mockTags: Tag[] = [
-  {
-    id: '1',
-    name: 'react',
-    description: 'Biblioteca JavaScript para construção de interfaces de usuário',
-    questionCount: 1245,
-    followers: 892,
-    isFollowing: true,
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    icon: '⚛️',
-    lastActivity: '2024-01-15',
-    createdAt: '2023-03-10'
-  },
-  {
-    id: '2',
-    name: 'typescript',
-    description: 'Superset de JavaScript com tipagem estática',
-    questionCount: 892,
-    followers: 567,
-    isFollowing: false,
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    icon: '📘',
-    lastActivity: '2024-01-14',
-    createdAt: '2023-04-22'
-  },
-  {
-    id: '3',
-    name: 'javascript',
-    description: 'Linguagem de programação para web development',
-    questionCount: 2345,
-    followers: 1456,
-    isFollowing: true,
-    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-    icon: '🟨',
-    lastActivity: '2024-01-15',
-    createdAt: '2023-01-15'
-  },
-  {
-    id: '4',
-    name: 'nodejs',
-    description: 'Runtime JavaScript no lado do servidor',
-    questionCount: 567,
-    followers: 345,
-    isFollowing: false,
-    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-    icon: '🟢',
-    lastActivity: '2024-01-13',
-    createdAt: '2023-05-30'
-  },
-  {
-    id: '5',
-    name: 'nextjs',
-    description: 'Framework React para produção com renderização server-side',
-    questionCount: 432,
-    followers: 278,
-    isFollowing: true,
-    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
-    icon: '⚡',
-    lastActivity: '2024-01-14',
-    createdAt: '2023-06-12'
-  },
-  {
-    id: '6',
-    name: 'tailwind',
-    description: 'Framework CSS utility-first',
-    questionCount: 789,
-    followers: 456,
-    isFollowing: false,
-    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300',
-    icon: '🎨',
-    lastActivity: '2024-01-12',
-    createdAt: '2023-07-18'
-  },
-  {
-    id: '7',
-    name: 'web',
-    description: 'Desenvolvimento web em geral',
-    questionCount: 1123,
-    followers: 678,
-    isFollowing: false,
-    color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
-    icon: '🌐',
-    lastActivity: '2024-01-15',
-    createdAt: '2023-02-14'
-  },
-  {
-    id: '8',
-    name: 'mobile',
-    description: 'Desenvolvimento para dispositivos móveis',
-    questionCount: 456,
-    followers: 234,
-    isFollowing: false,
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-    icon: '📱',
-    lastActivity: '2024-01-11',
-    createdAt: '2023-08-05'
-  },
-  {
-    id: '9',
-    name: 'games',
-    description: 'Jogos, desenvolvimento de games e consoles',
-    questionCount: 678,
-    followers: 345,
-    isFollowing: true,
-    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-    icon: '🎮',
-    lastActivity: '2024-01-15',
-    createdAt: '2023-09-20'
-  },
-  {
-    id: '10',
-    name: 'estudos',
-    description: 'Dúvidas sobre estudos, carreira e aprendizado',
-    questionCount: 345,
-    followers: 189,
-    isFollowing: false,
-    color: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300',
-    icon: '📚',
-    lastActivity: '2024-01-10',
-    createdAt: '2023-10-15'
-  },
-  {
-    id: '11',
-    name: 'carreira',
-    description: 'Dicas de carreira, entrevistas e mercado de trabalho',
-    questionCount: 234,
-    followers: 156,
-    isFollowing: false,
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-    icon: '💼',
-    lastActivity: '2024-01-14',
-    createdAt: '2023-11-08'
-  },
-  {
-    id: '12',
-    name: 'dúvida',
-    description: 'Perguntas gerais e dúvidas diversas',
-    questionCount: 567,
-    followers: 278,
-    isFollowing: false,
-    color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
-    icon: '❓',
-    lastActivity: '2024-01-13',
-    createdAt: '2023-12-01'
-  },
-  {
-    id: '13',
-    name: 'tecnologia',
-    description: 'Tecnologia em geral, gadgets e inovações',
-    questionCount: 789,
-    followers: 432,
-    isFollowing: true,
-    color: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-300',
-    icon: '💻',
-    lastActivity: '2024-01-15',
-    createdAt: '2024-01-02'
-  },
-  {
-    id: '14',
-    name: 'design',
-    description: 'UI/UX, design de interfaces e experiência do usuário',
-    questionCount: 321,
-    followers: 198,
-    isFollowing: false,
-    color: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900 dark:text-fuchsia-300',
-    icon: '🎨',
-    lastActivity: '2024-01-12',
-    createdAt: '2024-01-05'
-  },
-  {
-    id: '15',
-    name: 'backend',
-    description: 'Desenvolvimento backend, APIs e servidores',
-    questionCount: 543,
-    followers: 321,
-    isFollowing: false,
-    color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
-    icon: '⚙️',
-    lastActivity: '2024-01-14',
-    createdAt: '2024-01-08'
-  }
-];
-
-// Categorias de tags
-const tagCategories = [
-  { name: 'Tecnologia', icon: '💻', count: 8 },
-  { name: 'Programação', icon: '👨‍💻', count: 10 },
-  { name: 'Frontend', icon: '🎨', count: 6 },
-  { name: 'Backend', icon: '⚙️', count: 4 },
-  { name: 'Mobile', icon: '📱', count: 3 },
-  { name: 'Games', icon: '🎮', count: 2 },
-  { name: 'Carreira', icon: '💼', count: 3 },
-  { name: 'Estudos', icon: '📚', count: 4 }
-];
+import { mockTags } from '../../data/mock/tags'; // Importando mockTags
+import { popularTags } from '../../data/mock/tags'; // Importando popularTags (se existir no arquivo)
+import { CATEGORIES } from '../../data/constants/app'; // Importando CATEGORIES
 
 export const TagsPage = () => {
   const navigate = useNavigate();
-  const [tags, setTags] = useState<Tag[]>(mockTags);
+  const [tags, setTags] = useState<Tag[]>(mockTags); // Usando mockTags importado
   const [sortBy, setSortBy] = useState<TagSort>('popular');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFollowingOnly, setShowFollowingOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Usando CATEGORIES importado ou criando fallback
+  const tagCategories = CATEGORIES || [
+    { name: 'Tecnologia', icon: '💻', count: 8 },
+    { name: 'Programação', icon: '👨‍💻', count: 10 },
+    { name: 'Frontend', icon: '🎨', count: 6 },
+    { name: 'Backend', icon: '⚙️', count: 4 },
+    { name: 'Mobile', icon: '📱', count: 3 },
+    { name: 'Games', icon: '🎮', count: 2 },
+    { name: 'Carreira', icon: '💼', count: 3 },
+    { name: 'Estudos', icon: '📚', count: 4 }
+  ];
 
   // Estatísticas totais
   const totalTags = tags.length;
@@ -220,7 +38,7 @@ export const TagsPage = () => {
     
     // Simular carregamento
     setTimeout(() => {
-      let filteredTags = [...mockTags];
+      let filteredTags = [...mockTags]; // Usando mockTags importado
       
       // Filtrar por busca
       if (searchQuery) {
@@ -268,7 +86,11 @@ export const TagsPage = () => {
     setTags(prevTags =>
       prevTags.map(tag =>
         tag.id === tagId
-          ? { ...tag, isFollowing: !tag.isFollowing, followers: tag.isFollowing ? tag.followers - 1 : tag.followers + 1 }
+          ? { 
+              ...tag, 
+              isFollowing: !tag.isFollowing, 
+              followers: tag.isFollowing ? tag.followers - 1 : tag.followers + 1 
+            }
           : tag
       )
     );
