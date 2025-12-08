@@ -1,0 +1,282 @@
+/* src/pages/Paginas.css - Estilo para todas as páginas informativas */
+.pagina-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.pagina-header {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  padding: 4rem 5%;
+  text-align: center;
+}
+
+.pagina-header h1 {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+}
+
+.pagina-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.pagina-conteudo {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 3rem 5%;
+}
+
+.secao {
+  margin-bottom: 4rem;
+}
+
+.secao h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #2563eb;
+  padding-left: 1rem;
+}
+
+.secao p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos específicos para Sobre.jsx */
+.valores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.valor-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.valor-card:hover {
+  transform: translateY(-5px);
+}
+
+.valor-card h3 {
+  color: #2563eb;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.estatisticas {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.estatistica {
+  text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  min-width: 150px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.numero {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #2563eb;
+  margin-bottom: 0.5rem;
+}
+
+.descricao {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Estilos específicos para ComoFunciona.jsx */
+.passos-container {
+  margin: 3rem 0;
+}
+
+.passo-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #2563eb;
+}
+
+.passo-numero {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.passo-conteudo h3 {
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.lista-dicas {
+  list-style: none;
+  padding-left: 0;
+}
+
+.lista-dicas li {
+  padding: 0.5rem 0;
+  padding-left: 2rem;
+  position: relative;
+}
+
+.lista-dicas li:before {
+  content: "✓";
+  color: #10b981;
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+.botoes-acao {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Estilos específicos para Politicas.jsx */
+.aviso-importante {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.politicas-lista {
+  margin: 3rem 0;
+}
+
+.politica-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.politica-card h3 {
+  color: #dc2626;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.politica-descricao {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.politica-itens {
+  padding-left: 1.5rem;
+  color: #4b5563;
+}
+
+.politica-itens li {
+  margin-bottom: 0.5rem;
+}
+
+.contato-denuncia {
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  text-align: center;
+  border: 2px dashed #d1d5db;
+}
+
+.termo-aceite {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid #2563eb;
+}
+
+/* Botões comuns */
+.cta-button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-block;
+}
+
+.cta-button:hover {
+  background: #1d4ed8;
+}
+
+.cta-button.primario {
+  background: #059669;
+}
+
+.cta-button.primario:hover {
+  background: #047857;
+}
+
+.cta-button.secundario {
+  background: #6b7280;
+}
+
+.cta-button.secundario:hover {
+  background: #4b5563;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .pagina-header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .pagina-header p {
+    font-size: 1rem;
+  }
+  
+  .passo-card {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .valores-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .botoes-acao {
+    flex-direction: column;
+  }
+  
+  .cta-button {
+    width: 100%;
+    text-align: center;
+  }
+}
