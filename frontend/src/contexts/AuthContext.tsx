@@ -1,5 +1,6 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { authService } from '../services/auth/authService'; // ← ADICIONAR
 
 interface User {
   id: string;
@@ -33,47 +34,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar se há usuário salvo no localStorage
-    const savedUser = localStorage.getItem('askme_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('askme_user');
+    // ✅ AGORA USA O authService para verificar autenticação
+    if (authService.isAuthenticated()) {
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        // Converte do tipo User do localDataService para User do contexto
+        setUser({
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          avatar: currentUser.avatar,
+          bio: currentUser.bio,
+        });
       }
     }
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulação de API - substituir por chamada real
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // ✅ USA O authService REAL
+    const response = await authService.login({ email, password });
     
-    // Dados mockados do usuário
-    const mockUser: User = {
-      id: Date.now().toString(),
-      name: email.split('@')[0],
-      email,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=3B82F6&color=fff`,
-      reputation: 100,
-      bio: 'Novo usuário do AskMe'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('askme_user', JSON.stringify(mockUser));
+    // Converte para o tipo do contexto
+    setUser({
+      id: response.user.id,
+      name: response.user.name,
+      email: response.user.email,
+      avatar: response.user.avatar,
+      bio: response.user.bio,
+    });
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // ✅ USA O authService REAL
+    await authService.logout();
     setUser(null);
-    localStorage.removeItem('askme_user');
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-      localStorage.setItem('askme_user', JSON.stringify(updatedUser));
+      // Aqui poderia salvar no localDataService também
     }
   };
 

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { authService } from '../../services/auth/authService'; // ✅ IMPORT ADICIONADO
 
 export const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -63,23 +64,18 @@ export const SignupPage = () => {
         throw new Error('Você precisa aceitar os termos e condições');
       }
       
-      // Simular cadastro na API (substituir por chamada real)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Criar usuário mock (em produção, enviar para API)
-      const newUser = {
-        id: Date.now().toString(),
+      // ✅ CADASTRA USUÁRIO NO SISTEMA LOCAL
+      const registerResponse = await authService.register({
         name: formData.name,
         email: formData.email,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name)}&background=3B82F6&color=fff`,
-        reputation: 10, // Reputação inicial
-        bio: 'Novo membro da comunidade AskMe! 👋'
-      };
-      
-      // Simular login automático após cadastro
-      await login(formData.email, formData.password);
+        password: formData.password,
+        passwordConfirmation: formData.confirmPassword,
+      });
       
       setSuccess('🎉 Cadastro realizado com sucesso! Redirecionando...');
+      
+      // ✅ FAZ LOGIN AUTOMÁTICO (já salva no localStorage)
+      await login(formData.email, formData.password);
       
       // Redirecionar após 2 segundos
       setTimeout(() => {

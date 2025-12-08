@@ -1,32 +1,81 @@
 // src/components/Question/QuestionFeed.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // ← ADICIONAR useEffect
 import { QuestionCard } from './QuestionCard';
-import { Question } from '../../types/Question';
 import { useNavigate } from 'react-router-dom';
-import { initialMockQuestions, relatedQuestions } from '../../data/mock/questions';
+import { questionService } from '../../services/questions/questionService'; // ← ADICIONAR
 
 interface QuestionFeedProps {
   onCreateQuestion?: () => void;
-  questions?: Question[];
 }
 
-export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: QuestionFeedProps) => {
+export const QuestionFeed = ({ onCreateQuestion }: QuestionFeedProps) => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('todas');
+  const [questions, setQuestions] = useState<any[]>([]); // ← ESTADO PARA PERGUNTAS
+  const [loading, setLoading] = useState(true); // ← LOADING STATE
+  const [stats, setStats] = useState({
+    questionsToday: 0,
+    totalAnswers: 0,
+    onlineUsers: 42 // Mockado por enquanto
+  });
   
-  // CORREÇÃO AQUI: Não misturar propQuestions com mockQuestions
-  // Se vier perguntas via props, usa elas. Senão, usa as mockadas.
-  const allQuestions = propQuestions && propQuestions.length > 0 
-    ? propQuestions 
-    : initialMockQuestions;
-  
+  // ✅ CARREGAR PERGUNTAS DO LOCALSTORAGE
+  useEffect(() => {
+    loadQuestions();
+  }, [activeFilter]); // Recarrega quando muda filtro
+
+  const loadQuestions = async () => {
+    setLoading(true);
+    try {
+      const response = await questionService.getQuestions({
+        // Podemos adicionar filtros depois
+        limit: 10
+      });
+      
+      setQuestions(response.questions);
+      
+      // Calcular estatísticas
+      const today = new Date().toISOString().split('T')[0];
+      const questionsToday = response.questions.filter((q: any) => 
+        q.createdAt.startsWith(today)
+      ).length;
+      
+      const totalAnswers = response.questions.reduce((total: number, q: any) => 
+        total + (q.answersCount || 0), 0
+      );
+      
+      setStats({
+        questionsToday,
+        totalAnswers,
+        onlineUsers: 42
+      });
+      
+    } catch (error) {
+      console.error('Erro ao carregar perguntas:', error);
+      setQuestions([]); // Se der erro, array vazio
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);
+    // Aqui poderíamos aplicar filtros diferentes
+    // Por enquanto só muda o estado visual
   };
 
   const handleRelatedQuestionClick = (questionId: string) => {
     navigate(`/question/${questionId}`);
   };
+
+  // ✅ PERGUNTAS RELACIONADAS (pega algumas das perguntas existentes)
+  const relatedQuestions = questions.slice(0, 3).map(q => ({
+    id: q.id,
+    title: q.title,
+    answersCount: q.answers?.length || 0,
+    upvotes: q.upvotes?.length || 0,
+    tags: q.tags || []
+  }));
 
   return (
     <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -84,36 +133,53 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
               </button>
             </div>
 
-            {/* Lista de Perguntas - CORRIGIDO */}
-            <div className="space-y-4">
-              {allQuestions.map((question) => (
-                <QuestionCard 
-                  key={`question-${question.id}`}
-                  question={question} 
-                />
-              ))}
-              
-              {allQuestions.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400 text-lg">
-                    Nenhuma pergunta encontrada. Seja o primeiro a perguntar! ✨
-                  </p>
-                </div>
-              )}
-            </div>
+            {/* Lista de Perguntas */}
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400 text-lg">
+                  Carregando perguntas...
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {questions.map((question) => (
+                  <QuestionCard 
+                    key={`question-${question.id}`}
+                    question={question} 
+                  />
+                ))}
+                
+                {questions.length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 dark:text-gray-400 text-lg">
+                      Nenhuma pergunta encontrada. Seja o primeiro a perguntar! ✨
+                    </p>
+                    <button 
+                      onClick={onCreateQuestion}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                      Fazer Primeira Pergunta
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Carregar Mais */}
-            {allQuestions.length > 0 && (
+            {questions.length > 0 && (
               <div className="flex justify-center">
-                <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  Carregar mais perguntas
+                <button 
+                  onClick={loadQuestions}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Atualizar perguntas
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Sidebar de Perguntas Relacionadas (direita) - CORRIGIDO */}
+        {/* Sidebar de Perguntas Relacionadas (direita) */}
         <div className="w-80 flex-shrink-0">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-8">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
@@ -146,6 +212,12 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
                   </div>
                 </div>
               ))}
+              
+              {relatedQuestions.length === 0 && !loading && (
+                <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
+                  Ainda não há perguntas relacionadas.
+                </p>
+              )}
             </div>
 
             {/* Estatísticas */}
@@ -156,17 +228,15 @@ export const QuestionFeed = ({ onCreateQuestion, questions: propQuestions }: Que
               <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex justify-between">
                   <span>Perguntas hoje:</span>
-                  <span className="font-semibold">{allQuestions.length}</span>
+                  <span className="font-semibold">{stats.questionsToday}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Respostas:</span>
-                  <span className="font-semibold">
-                    {allQuestions.reduce((total, q) => total + q.answersCount, 0)}
-                  </span>
+                  <span className="font-semibold">{stats.totalAnswers}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Usuários online:</span>
-                  <span className="font-semibold text-green-600">42</span>
+                  <span className="font-semibold text-green-600">{stats.onlineUsers}</span>
                 </div>
               </div>
             </div>

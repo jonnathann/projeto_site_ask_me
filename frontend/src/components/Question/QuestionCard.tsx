@@ -39,7 +39,7 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
     handleReaction, 
     setShowPicker 
   } = useReactions({ 
-    initialCount: question.upvotes 
+    initialCount: question.upvotes || 0 // ✅ Garante número
   });
 
   const handleQuestionClick = () => {
@@ -152,7 +152,7 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
           {/* Comentários */}
           <button className="flex items-center space-x-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <span>💬</span>
-            <span>{question.answersCount} respostas</span>
+            <span>{question.answersCount || 0} respostas</span>
           </button>
         </div>
         
@@ -161,21 +161,14 @@ export const QuestionCard = ({ question }: QuestionCardProps) => {
         </button>
       </div>
 
-      {/* Contadores de Reactions (opcional - estilo Facebook) */}
-      <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
-        <div className="flex -space-x-1">
-          {REACTIONS
-            .filter(reaction => reaction.type && Math.random() > 0.5) // Simulação
-            .slice(0, 3)
-            .map(reaction => (
-              <span key={reaction.type} className="text-sm">
-                {reaction.emoji}
-              </span>
-            ))
-          }
+      {/* ✅ REMOVIDA A SIMULAÇÃO DE REACTIONS */}
+      {/* Em vez disso, podemos mostrar contagem simples */}
+      {upvotes > 0 && (
+        <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-sm">👍</span>
+          <span>{upvotes} {upvotes === 1 ? 'reação' : 'reações'}</span>
         </div>
-        <span>{upvotes} reações</span>
-      </div>
+      )}
     </div>
   );
 };

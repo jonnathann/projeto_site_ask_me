@@ -1,4 +1,4 @@
-// App.tsx - VERSÃO ATUALIZADA COM USERS PAGE
+// App.tsx - VERSÃO ATUALIZADA (apenas remover dados mock)
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -17,9 +17,8 @@ import { UsersPage } from './pages/Community/UsersPage';
 import { LoginPage } from './pages/LoginPage/LoginPage';
 import { SignupPage } from './pages/SignupPage/SignupPage';
 import { LandingPage } from './pages/LandingPage/LandingPage';
-import { Question } from './types/Question';
 import { BadgesPage } from './pages/Community/BadgesPage';
-
+import { questionService } from './services/questions/questionService'; // ← ADICIONAR
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -28,7 +27,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function AppContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [questions, setQuestions] = useState<Question[]>([]);
   const { isAuthenticated } = useAuth();
 
   const handleCreateQuestion = async (questionData: { 
@@ -36,24 +34,20 @@ function AppContent() {
     content: string; 
     tags: string[] 
   }) => {
-    const newQuestion: Question = {
-      id: Date.now().toString(),
-      title: questionData.title,
-      content: questionData.content,
-      author: { 
-        id: 'current-user', 
-        name: 'Você',
-        avatar: 'https://cdn.worldvectorlogo.com/logos/nuon.svg'
-      },
-      createdAt: new Date().toISOString().split('T')[0],
-      answersCount: 0,
-      upvotes: 0,
-      tags: questionData.tags,
-      isAnswered: false
-    };
-
-    setQuestions(prev => [newQuestion, ...prev]);
-    setIsModalOpen(false);
+    try {
+      // ✅ AGORA USA O SERViÇO LOCAL (persiste no localStorage)
+      await questionService.createQuestion(questionData);
+      
+      // Fecha modal
+      setIsModalOpen(false);
+      
+      // Recarrega a página ou atualiza estado se necessário
+      window.location.reload(); // Simples por enquanto
+      
+    } catch (error) {
+      console.error('Erro ao criar pergunta:', error);
+      alert('Erro ao criar pergunta: ' + (error as Error).message);
+    }
   };
 
   return (
@@ -74,7 +68,7 @@ function AppContent() {
         {/* Rota principal */}
         <Route path="/" element={
           isAuthenticated ? 
-            <QuestionFeed onCreateQuestion={() => setIsModalOpen(true)} questions={questions} /> : 
+            <QuestionFeed onCreateQuestion={() => setIsModalOpen(true)} /> : 
             <LandingPage />
         } />
         
