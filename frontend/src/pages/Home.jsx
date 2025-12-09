@@ -32,7 +32,7 @@ function Home() {
         {/* Botão de ação principal */}
         <div className="header-actions">
           <button className="ask-button" onClick={handleAskClick}>
-            ❓ Perguntar
+             Perguntar ❓
           </button>
         </div>
       </header>
@@ -88,13 +88,16 @@ function Home() {
         <h2 className="section-title">Categorias Populares</h2>
         <div className="categories-list">
           <span className="category-tag">💖 Relacionamentos</span>
-          <span className="category-tag">🔞 Sexualidade</span>
-          <span className="category-tag">💼 Carreira</span>
-          <span className="category-tag">🧠 Saúde Mental</span>
-          <span className="category-tag">💰 Finanças</span>
-          <span className="category-tag">🎓 Educação</span>
-          <span className="category-tag">⚕️ Saúde</span>
-          <span className="category-tag">🍔 Vida Cotidiana</span>
+            <span className="category-tag">💘 Paquera</span>
+            <span className="category-tag">🔞 Sexo</span>
+            <span className="category-tag">🎬 Entretenimento</span>
+            <span className="category-tag">🎞️ Filmes</span>
+            <span className="category-tag">🎮 Games</span>
+            <span className="category-tag">📚 Livros</span>
+            <span className="category-tag">⚕️ Saúde</span>
+            <span className="category-tag">🍔 Vida Cotidiana</span>
+            <span className="category-tag">💼 Carreira</span>
+            <span className="category-tag">🎓 Educação</span>
         </div>
       </section>
 

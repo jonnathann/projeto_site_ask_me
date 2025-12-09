@@ -9,6 +9,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/*Todas as rotas de todas as páginas*/}
         <Route path="/" element={<Home />} />
         <Route path="/sobre" element={<Sobre />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
@@ -16,6 +17,8 @@ function App() {
         {/* Adicione outras rotas conforme criar */}
       </Routes>
     </Router>
+
+    
   );
 }
 
