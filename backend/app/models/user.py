@@ -11,6 +11,9 @@ class User(Base):
     email = Column(String(200), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
 
+    # Novo campo para nickname de usuário
+    nickname = Column(String(50), nullable=False)
+
     avatar_url = Column(String(300), nullable=True)
     bio = Column(String(300), nullable=True)
 

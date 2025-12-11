@@ -24,6 +24,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         password_hash=hash_password(user.password),
         avatar_url=user.avatar_url,
+        nickname = user.nickname, #Novo Campo
         bio=replace_shortcodes(user.bio) if user.bio else None
     )
 

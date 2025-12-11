@@ -6,6 +6,7 @@ class UserCreate(BaseModel):
     name: str
     email: str
     password: str
+    nickname: str #Novo campo 
     avatar_url: str | None = None
     bio: str | None = None
 
@@ -17,6 +18,7 @@ class UserResponse(BaseModel):
     id: int
     name: str
     email: str
+    nickname: str #Novo campo
     avatar_url: str | None
     bio: str | None
     level: int  # 👈 NOVO CAMPO
