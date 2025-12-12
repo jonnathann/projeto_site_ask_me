@@ -1,54 +1,54 @@
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';  // Importamos Link
+import { Link } from 'react-router-dom';
 import './style_css/Home.css';
 
 function Home() {
   const navigate = useNavigate();
 
+  // Botão "JUNTE-SE A NÓS" → Página de Registro
   const handleJoinClick = () => {
-    navigate('/register');
+    navigate('/registro');
   };
 
+  // Botão "Perguntar ❓" → Página de Login
   const handleAskClick = () => {
-    navigate('/perguntar');  // Página para fazer perguntas
+    navigate('/login');
   };
 
   return (
     <div className="home-container">
-      {/* Header atualizado com Link */}
+      {/* Header atualizado */}
       <header className="header">
         <div className="logo">
           <span className="logo-ask">ASK</span>
           <span className="logo-me">ME</span>
         </div>
-        
-        {/* Links do React Router para navegação interna */}
+
         <nav className="nav-links">
           <Link to="/sobre">Sobre</Link>
           <Link to="/como-funciona">Como Funciona</Link>
           <Link to="/politicas">Políticas</Link>
         </nav>
-        
-        {/* Botão de ação principal */}
+
         <div className="header-actions">
           <button className="ask-button" onClick={handleAskClick}>
-             Perguntar ❓
+            Perguntar ❓
           </button>
         </div>
       </header>
 
-      {/* Hero Section - Tela principal */}
+      {/* Hero Section */}
       <main className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
             <span className="title-ask">ASK</span>
             <span className="title-me">ME</span>
           </h1>
-          
+
           <h2 className="hero-subtitle">
             O lugar onde <span className="highlight">todas as perguntas</span> têm resposta
           </h2>
-          
+
           <p className="hero-description">
             Um espaço seguro e acolhedor para explorar suas dúvidas mais profundas. 
             Pergunte sobre <strong>qualquer coisa</strong> - desde relacionamentos e sexualidade 
@@ -83,25 +83,25 @@ function Home() {
         </div>
       </main>
 
-      {/* Seção de Categorias (simples) */}
+      {/* Categorias Populares */}
       <section className="categories-section">
         <h2 className="section-title">Categorias Populares</h2>
         <div className="categories-list">
           <span className="category-tag">💖 Relacionamentos</span>
-            <span className="category-tag">💘 Paquera</span>
-            <span className="category-tag">🔞 Sexo</span>
-            <span className="category-tag">🎬 Entretenimento</span>
-            <span className="category-tag">🎞️ Filmes</span>
-            <span className="category-tag">🎮 Games</span>
-            <span className="category-tag">📚 Livros</span>
-            <span className="category-tag">⚕️ Saúde</span>
-            <span className="category-tag">🍔 Vida Cotidiana</span>
-            <span className="category-tag">💼 Carreira</span>
-            <span className="category-tag">🎓 Educação</span>
+          <span className="category-tag">💘 Paquera</span>
+          <span className="category-tag">🔞 Sexo</span>
+          <span className="category-tag">🎬 Entretenimento</span>
+          <span className="category-tag">🎞️ Filmes</span>
+          <span className="category-tag">🎮 Games</span>
+          <span className="category-tag">📚 Livros</span>
+          <span className="category-tag">⚕️ Saúde</span>
+          <span className="category-tag">🍔 Vida Cotidiana</span>
+          <span className="category-tag">💼 Carreira</span>
+          <span className="category-tag">🎓 Educação</span>
         </div>
       </section>
 
-      {/* Seção Sobre - Agora removemos o ID pois temos página separada */}
+      {/* Sobre */}
       <section className="about-section">
         <div className="about-content">
           <h2>Por que escolher o ASK ME?</h2>
@@ -123,8 +123,7 @@ function Home() {
               <p>Faça quantas perguntas quiser, quando quiser.</p>
             </div>
           </div>
-          
-          {/* Link para página Sobre completa */}
+
           <div className="saiba-mais">
             <Link to="/sobre" className="saiba-mais-link">
               Saiba mais sobre nossa missão →
@@ -133,7 +132,7 @@ function Home() {
         </div>
       </section>
 
-      {/* Seção Como Funciona - Preview */}
+      {/* Como Funciona */}
       <section className="how-section">
         <div className="how-content">
           <h2>Como Funciona?</h2>
@@ -161,14 +160,12 @@ function Home() {
       <footer className="footer">
         <div className="footer-content">
           <p>💭 Não guarde dúvidas. Compartilhe. Aprenda. Cresça.</p>
-          
           <div className="footer-links">
             <Link to="/sobre">Sobre</Link>
             <Link to="/como-funciona">Como Funciona</Link>
             <Link to="/politicas">Políticas</Link>
             <a href="#contact">Contato</a>
           </div>
-          
           <p className="footer-copyright">© 2024 ASK ME. Todos os direitos reservados.</p>
         </div>
       </footer>
