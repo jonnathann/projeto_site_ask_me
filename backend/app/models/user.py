@@ -14,6 +14,10 @@ class User(Base):
     # Novo campo para nickname de usuário
     nickname = Column(String(50), nullable=False)
 
+    #Novo campo pra gênero
+    gender = Column(String(20), nullable=False)
+ 
+
     avatar_url = Column(String(300), nullable=True)
     bio = Column(String(300), nullable=True)
 

@@ -367,3 +367,26 @@
   .auth-logo { font-size: 2rem; }
   .auth-header h1 { font-size: 1.5rem; }
 }
+
+/* Campo select de gênero */
+.auth-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-form select:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Mensagem de erro */
+.auth-form select.input-error {
+  border-color: #e74c3c;
+}

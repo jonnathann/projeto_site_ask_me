@@ -4,24 +4,27 @@ import api from './api';
 export const authService = {
   // LOGIN OAuth2
   async login(email, password) {
-    console.log('📤 Login OAuth2:', email);
+    if (!email || !password) throw new Error("Email ou senha ausentes");
     const response = await api.post('/users/login', { email, password });
-    console.log('📥 Resposta OAuth2:', response.data);
     return response.data; // { access_token, token_type }
   },
 
   // REGISTRO
   async register(userData) {
-    console.log('📤 Registro:', userData.email);
+    if (!userData || !userData.email || !userData.password || !userData.name) {
+      throw new Error("Dados obrigatórios ausentes");
+    }
+
     const response = await api.post('/users/register', {
       name: userData.name,
       email: userData.email,
       password: userData.password,
       nickname: userData.nickname || userData.name,
       avatar_url: userData.avatar_url || '',
-      bio: userData.bio || ''
+      bio: userData.bio || '',
+      gender: userData.gender || 'prefiro_nao_dizer'
     });
-    console.log('📥 Resposta do registro:', response.data);
+
     return response.data; // usuário criado, sem token
   },
 
@@ -50,23 +53,24 @@ export const authService = {
 
   // Salva token e usuário no localStorage
   setAuthData(token, user) {
+    if (!token || !user) return;
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
   },
 
   // Decodifica JWT
   decodeJWT(token) {
+    if (!token) return null;
     try {
       const payload = token.split('.')[1];
+      if (!payload) return null;
       const decoded = JSON.parse(atob(payload));
-      console.log('🔍 JWT decodificado:', decoded);
       return {
         id: decoded.user_id || decoded.sub || decoded.id,
         email: decoded.email || decoded.sub,
         name: decoded.name || decoded.given_name || 'Usuário'
       };
-    } catch (error) {
-      console.log('⚠️ Não foi possível decodificar JWT:', error.message);
+    } catch {
       return null;
     }
   }

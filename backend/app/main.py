@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # ← ADICIONE ESTA LINHA
 
 # 👇 IMPORTS DAS ROTAS
 from app.routes.question_routes import router as question_router  
@@ -14,12 +15,21 @@ from app.routes.dashboard_routes import router as dashboard_router
 from app.routes.friendship_routes import router as friendship_router
 from app.routes.leaderboard_routes import router as leaderboard_router
 from app.routes.badge_routes import router as badge_router
-from app.routes.chat_routes import router as chat_router  # 👈 NOVA LINHA
-
+from app.routes.chat_routes import router as chat_router
 
 app = FastAPI(title="Ask Me API")
 
-# 👇 INCLUINDO ROTAS PRINCIPAIS
+# ⭐⭐⭐ CONFIGURE CORS AQUI ⭐⭐⭐
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # ← SEU FRONTEND
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ⭐⭐⭐ ATÉ AQUI ⭐⭐⭐
+
+# 👇 INCLUINDO ROTAS PRINCIPAIS (TUDO ISSO JÁ EXISTE, SÓ DEIXA)
 app.include_router(user_router) 
 app.include_router(question_router) 
 app.include_router(answer_router) 
@@ -33,8 +43,7 @@ app.include_router(dashboard_router)
 app.include_router(friendship_router)
 app.include_router(leaderboard_router)
 app.include_router(badge_router)
-app.include_router(chat_router)  # 👈 ADICIONAR ESTA LINHA
-
+app.include_router(chat_router)
 
 @app.get("/")
 def root():

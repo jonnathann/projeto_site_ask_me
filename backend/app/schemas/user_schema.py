@@ -1,5 +1,5 @@
 # app/schemas/user_schema.py
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime
 
 class UserCreate(BaseModel):
@@ -7,8 +7,17 @@ class UserCreate(BaseModel):
     email: str
     password: str
     nickname: str #Novo campo 
+    gender: str
     avatar_url: str | None = None
     bio: str | None = None
+
+    # Função pra validar o campo gênero
+    @validator("gender")
+    def validate_gender(cls, v):
+        allowed = {"masculino", "feminino", "outro", "prefiro_nao_dizer"}
+        if v not in allowed:
+            raise ValueError("Gênero inválido")
+        return v
 
 class UserLogin(BaseModel):
     email: str
@@ -19,6 +28,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     nickname: str #Novo campo
+    gender: str #Novo campo
     avatar_url: str | None
     bio: str | None
     level: int  # 👈 NOVO CAMPO

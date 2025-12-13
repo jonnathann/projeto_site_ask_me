@@ -8,20 +8,17 @@ export const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // 🔄 Carregar usuário via token ou /users/me
+  // Carregar usuário via token ou /users/me
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
       try {
-        // Adiciona token ao header para requisição /me
         api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         const response = await api.get("/users/me");
         setUser(response.data);
-        console.log("👤 Usuário via /me:", response.data);
-      } catch (error) {
-        console.error("❌ Falha ao carregar usuário:", error);
+      } catch {
         localStorage.removeItem("token");
         setUser(null);
       }
@@ -30,43 +27,51 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-  // 🔐 LOGIN
+  // LOGIN
   const login = async (email, password) => {
+    if (!email || !password) return { success: false, error: "Email ou senha ausentes" };
+
     try {
       const data = await authService.login(email, password);
+      if (!data.access_token) return { success: false, error: "Token não recebido" };
 
-      if (!data.access_token) {
-        return { success: false, error: "Token não recebido" };
-      }
-
-      // Salva token
       authService.setAuthData(data.access_token, { email });
       api.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
 
-      // Busca usuário completo
       const meResponse = await api.get("/users/me");
       setUser(meResponse.data);
 
       return { success: true, user: meResponse.data };
     } catch (error) {
-      console.error("❌ Erro no login:", error);
       return { success: false, error: error.message || "Falha no login" };
     }
   };
 
-  // 📝 REGISTRO
+  // REGISTRO
   const register = async (userData) => {
+    if (!userData) return { success: false, error: "Dados do usuário ausentes" };
+
+    // Garante valores padrão
+    userData.avatar_url = userData.avatar_url || null;
+    userData.gender = userData.gender || "prefiro_nao_dizer";
+
     try {
       const data = await authService.register(userData);
-      console.log("📦 Dados retornados do registro:", data);
       return { success: true, user: data, needsLogin: true };
     } catch (error) {
-      console.error("❌ Erro no registro:", error);
-      return { success: false, error: error.message || "Falha no registro" };
+      if (error.response && error.response.data) {
+        const backendData = error.response.data;
+        const fieldErrors = (backendData.detail || []).map(
+          (err) => `${err.loc[1]}: ${err.msg}`
+        );
+        return { success: false, error: fieldErrors.join(", ") || JSON.stringify(backendData) };
+      } else {
+        return { success: false, error: error.message || "Falha no registro" };
+      }
     }
   };
 
-  // 🚪 LOGOUT
+  // LOGOUT
   const logout = () => {
     authService.logout();
     setUser(null);
