@@ -687,56 +687,167 @@ body.dark-mode .no-questions p {
     max-width: 500px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
     animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    max-height: 70vh; /* ← NOVO: Limitar altura máxima */
+    overflow-y: auto; /* ← NOVO: Scroll se ultrapassar */
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 25px;
+    padding: 15px 20px; /* ← REDUZIDO: de 20px 25px para 15px 20px */
     border-bottom: 1px solid #eee;
+    flex-shrink: 0; /* ← EVITA ENCOLHER */
 }
 
 .modal-header h2 {
     margin: 0;
     color: #333;
-    font-size: 20px;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.2s;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
-
-.modal-close:hover {
-    color: #e53935;
-    background-color: #f5f5f5;
+    font-size: 18px; /* ← REDUZIDO: de 20px para 18px */
 }
 
 .modal-content {
-    padding: 25px;
+    padding: 20px; /* ← REDUZIDO: de 25px para 20px */
+    flex: 1;
+    overflow-y: auto; /* ← Scroll interno se necessário */
+}
+
+/* Seção de upload de avatar - mais compacta */
+.avatar-upload-section {
+    text-align: center;
+    margin-bottom: 20px; /* ← REDUZIDO: de 30px para 20px */
+}
+
+.avatar-preview {
+    position: relative;
+    width: 100px; /* ← REDUZIDO: de 120px para 100px */
+    height: 100px; /* ← REDUZIDO: de 120px para 100px */
+    margin: 0 auto 10px; /* ← REDUZIDO: de 15px para 10px */
+}
+
+.upload-hint {
+    color: #666;
+    font-size: 11px; /* ← REDUZIDO: de 12px para 11px */
+    margin-top: 5px; /* ← REDUZIDO: de 8px para 5px */
+}
+
+/* Seções de edição mais compactas */
+.name-edit-section, .bio-edit-section {
+    margin-bottom: 15px; /* ← REDUZIDO: de 20-25px para 15px */
+}
+
+.name-edit-section label,
+.bio-edit-section label {
+    display: block;
+    margin-bottom: 6px; /* ← REDUZIDO: de 8px para 6px */
+    font-weight: bold;
+    color: #333;
+    font-size: 14px; /* ← Fonte menor para labels */
+}
+
+.name-input {
+    width: 100%;
+    padding: 10px; /* ← REDUZIDO: de 12px para 10px */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px; /* ← REDUZIDO: de 16px para 14px */
+    transition: border-color 0.2s;
+}
+
+.bio-textarea {
+    width: 100%;
+    padding: 10px; /* ← REDUZIDO: de 12px para 10px */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px; /* ← REDUZIDO: de 14px mantido */
+    resize: vertical;
+    transition: border-color 0.2s;
+    min-height: 80px; /* ← Altura mínima reduzida */
+    max-height: 120px; /* ← Altura máxima adicionada */
+}
+
+.bio-counter,
+.name-counter {
+    text-align: right;
+    font-size: 11px; /* ← REDUZIDO: de 12px para 11px */
+    color: #666;
+    margin-top: 3px; /* ← REDUZIDO: de 5px para 3px */
+}
+
+/* Ações do modal mais compactas */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px; /* ← REDUZIDO: de 15px para 12px */
+    padding: 15px 20px; /* ← REDUZIDO: de 20px 25px para 15px 20px */
+    border-top: 1px solid #eee;
+    flex-shrink: 0; /* ← EVITA ENCOLHER */
+}
+
+.modal-cancel, .modal-save {
+    padding: 8px 16px; /* ← REDUZIDO: de 10px 20px para 8px 16px */
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    border: none;
+    font-size: 14px; /* ← Fonte menor para botões */
+}
+
+/* Botão de upload mais compacto */
+.upload-avatar-button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 16px; /* ← REDUZIDO: de 10px 20px para 8px 16px */
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* ← REDUZIDO: de 8px para 6px */
+    font-size: 14px;
+}
+
+/* Responsividade ajustada */
+@media (max-width: 600px) {
+    .edit-modal {
+        width: 95%;
+        margin: 5px; /* ← REDUZIDO: de 10px para 5px */
+        max-height: 80vh; /* ← Um pouco mais alto em mobile */
+    }
+    
+    .modal-content {
+        padding: 15px; /* ← REDUZIDO: de 20px para 15px */
+    }
+    
+    .avatar-preview {
+        width: 80px; /* ← REDUZIDO: de 100px para 80px */
+        height: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-cancel, .modal-save {
+        width: 100%;
+    }
+    
+    .modal-header {
+        padding: 12px 15px; /* ← AINDA MAIS COMPACTO */
+    }
+    
+    .modal-content {
+        padding: 12px; /* ← AINDA MAIS COMPACTO */
+    }
 }
 
 /* Seção de upload de avatar */
@@ -965,6 +1076,59 @@ body.dark-mode .upload-avatar-button:hover:not(:disabled) {
     background-color: #1b5e20;
 }
 
+/* ============ EDIÇÃO DO NICKNAME ============ */
+.name-edit-section {
+    margin-bottom: 25px;
+}
+
+.name-edit-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.name-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.name-input:focus {
+    outline: none;
+    border-color: #4caf50;
+}
+
+.name-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* MODO ESCURO - EDIÇÃO DO NICKNAME */
+body.dark-mode .name-edit-section label {
+    color: #fff;
+}
+
+body.dark-mode .name-input {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #fff;
+}
+
+body.dark-mode .name-input:focus {
+    border-color: #66bb6a;
+}
+
+body.dark-mode .name-counter {
+    color: #aaa;
+}
+
 /* Responsividade para o modal */
 @media (max-width: 600px) {
     .edit-modal {
@@ -1051,7 +1215,10 @@ body.dark-mode .upload-avatar-button:hover:not(:disabled) {
     right: -50px;
     width: 220px;
   }
+
 }
+
+
 
 @media (max-width: 480px) {
   .profile-stats {

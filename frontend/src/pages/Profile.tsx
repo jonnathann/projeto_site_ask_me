@@ -30,6 +30,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
@@ -95,6 +96,7 @@ function Profile() {
       ];
 
       setProfileUser(mockUser);
+      setEditName(mockUser.name);
       setEditBio(mockUser.bio);
       setUserPosts(mockPosts);
       setLoading(false);
@@ -137,6 +139,7 @@ function Profile() {
   // Abrir modal de edição
   const handleEditClick = () => {
     if (profileUser) {
+      setEditName(profileUser.name);
       setEditBio(profileUser.bio);
       setAvatarPreview(profileUser.avatar_url || '');
       setShowEditModal(true);
@@ -151,9 +154,16 @@ function Profile() {
   // Salvar edições
   const handleSaveChanges = () => {
     if (profileUser) {
+      // Validação básica
+      if (!editName.trim()) {
+        alert('Por favor, insira um nome de usuário');
+        return;
+      }
+
       // Aqui você faria a requisição para a API
       const updatedUser = {
         ...profileUser,
+        name: editName,
         bio: editBio,
         avatar_url: avatarPreview || profileUser.avatar_url
       };
@@ -515,9 +525,26 @@ function Profile() {
                 <p className="upload-hint">JPEG, PNG, GIF ou WebP. Máx. 5MB</p>
               </div>
               
+              {/* Edição do Nickname */}
+              <div className="name-edit-section">
+                <label htmlFor="nickname">Nome de usuário (nickname)</label>
+                <input
+                  type="text"
+                  id="nickname"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Seu nome de usuário"
+                  maxLength={30}
+                  className="name-input"
+                />
+                <div className="name-counter">
+                  {editName.length}/30 caracteres
+                </div>
+              </div>
+              
               {/* Edição da Bio */}
               <div className="bio-edit-section">
-                <label htmlFor="bio">Edite sua bio...</label>
+                <label htmlFor="bio">Bio</label>
                 <textarea
                   id="bio"
                   value={editBio}
@@ -540,7 +567,7 @@ function Profile() {
               <button 
                 className="modal-save"
                 onClick={handleSaveChanges}
-                disabled={uploading}
+                disabled={uploading || !editName.trim()}
               >
                 Salvar Alterações
               </button>
