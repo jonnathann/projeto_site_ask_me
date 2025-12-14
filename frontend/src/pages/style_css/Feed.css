@@ -1,0 +1,330 @@
+/* Container principal */
+.home-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  transition: background-color 0.3s ease;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.logo-ask {
+  color: #4caf50;
+}
+
+.logo-me {
+  color: #2196f3;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ask-button {
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.ask-button:hover {
+  background-color: #45a049;
+}
+
+.dark-mode-button {
+  padding: 8px 12px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+/* Container do Feed - À ESQUERDA COM CARDS LARGOS */
+.feed-section {
+  max-width: 900px;
+  margin: 20px 0 20px 20px; /* Alinhado à esquerda */
+  padding: 0 10px;
+  transition: all 0.3s ease;
+}
+
+/* Lista de posts */
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* Cada card de post - LARGOS */
+.post-card {
+  width: 100%;
+  max-width: 850px; /* Largo */
+  border-radius: 12px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Cores por gênero - MODO CLARO */
+.post-card.male {
+  background-color: #e0f0ff; /* azul claro */
+  color: #333;
+}
+
+.post-card.female {
+  background-color: #ffe0e6; /* rosa claro */
+  color: #333;
+}
+
+/* Hover do card */
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Cabeçalho do post */
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+/* Título da seção */
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4caf50;
+}
+
+/* Avatar */
+.post-avatar img,
+.avatar-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Informações do usuário */
+.post-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-user {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.post-date {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Pergunta do post */
+.post-question {
+  font-size: 15px;
+  margin: 10px 0;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+/* Botão responder */
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reply-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.reply-button:hover {
+  background-color: #45a049;
+}
+
+/* ============ MODO ESCURO ============ */
+
+/* Body no modo escuro - FUNDO PRETO COMO NA IMAGEM */
+body.dark-mode {
+  background-color: #000; /* Preto total como na imagem */
+}
+
+/* Home container no modo escuro */
+body.dark-mode .home-container {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Header no modo escuro - CINZA ESCURO */
+body.dark-mode .header {
+  background-color: #1a1a1a; /* Cinza bem escuro */
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Botões no modo escuro */
+body.dark-mode .ask-button {
+  background-color: #2e7d32;
+  color: #fff;
+}
+
+body.dark-mode .ask-button:hover {
+  background-color: #1b5e20;
+}
+
+body.dark-mode .dark-mode-button {
+  color: #ffd700;
+  border-color: #555;
+  background-color: #333;
+}
+
+/* Logo no modo escuro */
+body.dark-mode .logo-ask {
+  color: #66bb6a; /* Verde mais claro */
+}
+
+body.dark-mode .logo-me {
+  color: #64b5f6; /* Azul mais claro */
+}
+
+/* Feed section no modo escuro */
+body.dark-mode .feed-section {
+  color: #fff;
+}
+
+/* Título da seção no modo escuro */
+body.dark-mode .section-title {
+  color: #fff;
+  border-bottom: 2px solid #66bb6a; /* Verde claro */
+}
+
+/* ===== CARDS NO MODO ESCURO (COMO NA IMAGEM) ===== */
+body.dark-mode .post-card {
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .post-card:hover {
+  box-shadow: 0 6px 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Cores dos cards no modo escuro - TONS ESCUROS COMO NA IMAGEM */
+body.dark-mode .post-card.male {
+  background-color: #1a365d; /* Azul bem escuro */
+  color: #e0f2fe; /* Azul bem claro para texto */
+  border: 1px solid #2d4a7a; /* Borda azul escuro */
+}
+
+body.dark-mode .post-card.female {
+  background-color: #4a1e41; /* Roxo/rosa escuro */
+  color: #fce7f3; /* Rosa muito claro para texto */
+  border: 1px solid #6d2c62; /* Borda rosa escuro */
+}
+
+/* Data do post no modo escuro */
+body.dark-mode .post-date {
+  color: #aaa; /* Cinza claro */
+}
+
+/* Botão responder no modo escuro */
+body.dark-mode .reply-button {
+  background-color: #2e7d32; /* Verde escuro */
+  color: white;
+}
+
+body.dark-mode .reply-button:hover {
+  background-color: #1b5e20; /* Verde mais escuro */
+}
+
+/* Avatar no modo escuro */
+body.dark-mode .avatar-image {
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  /* Em mobile, centraliza mas mantém largura */
+  .feed-section {
+    max-width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .post-card {
+    max-width: 100%; /* Ajusta à largura disponível */
+    padding: 12px 15px;
+  }
+
+  .header {
+    padding: 12px 15px;
+  }
+
+  .section-title {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .post-user-info {
+    margin-left: 0;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ask-button,
+  .dark-mode-button {
+    width: 100%;
+    text-align: center;
+  }
+}

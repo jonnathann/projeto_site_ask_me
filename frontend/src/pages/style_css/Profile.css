@@ -1,0 +1,1108 @@
+/* Container principal do perfil */
+.profile-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  transition: background-color 0.3s ease;
+  padding-bottom: 40px;
+}
+
+/* Header do perfil (reutilizando do feed) */
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* Logo */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.logo-ask {
+  color: #4caf50;
+}
+
+.logo-me {
+  color: #2196f3;
+}
+
+/* Ações do header */
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.ask-button, .back-button {
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-button {
+  background-color: #757575;
+}
+
+.ask-button:hover {
+  background-color: #45a049;
+}
+
+.back-button:hover {
+  background-color: #616161;
+}
+
+.dark-mode-button {
+  padding: 8px 12px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+/* ========== AVATAR NO HEADER ========== */
+
+/* Container do avatar dropdown */
+.avatar-dropdown-container {
+  position: relative;
+}
+
+/* Botão do avatar no header */
+.header-avatar-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Avatar no header */
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4caf50;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.header-avatar:hover {
+  transform: scale(1.1);
+  border-color: #45a049;
+}
+
+/* ========== DROPDOWN MENU ========== */
+
+.dropdown-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  width: 250px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header do dropdown */
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4caf50;
+}
+
+.dropdown-user-info {
+  flex: 1;
+}
+
+.dropdown-user-name {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.dropdown-user-email {
+  color: #666;
+  font-size: 12px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 0;
+}
+
+/* Itens do dropdown */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item.logout {
+  color: #e53935;
+}
+
+.dropdown-item.logout:hover {
+  background-color: #ffebee;
+}
+
+.dropdown-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Seção principal do perfil */
+.profile-content {
+  max-width: 900px;
+  margin: 30px 0 30px 20px; /* Alinhado à esquerda como o feed */
+  padding: 0 20px;
+}
+
+/* Cabeçalho do perfil - AGORA COM CORES POR GÊNERO */
+.profile-header-section {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 40px;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+/* Cores do cabeçalho por gênero - MODO CLARO */
+.profile-header-section.male {
+  background-color: #e0f0ff; /* azul claro */
+  color: #333;
+}
+
+.profile-header-section.female {
+  background-color: #ffe0e6; /* rosa claro */
+  color: #333;
+}
+
+/* Avatar do perfil */
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #4caf50;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Informações do usuário */
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.profile-bio {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+/* Estatísticas do perfil */
+.profile-stats {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: bold;
+  color: #4caf50;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Seção das perguntas do usuário */
+.profile-questions-section {
+  margin-top: 40px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: #333;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #4caf50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title-icon {
+  font-size: 20px;
+}
+
+/* Lista de posts do usuário */
+.user-posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* Card de pergunta do usuário - REMOVIDA BORDA ESQUERDA */
+.user-post-card {
+  width: 100%;
+  max-width: 850px; /* Largo como no feed */
+  border-radius: 12px;
+  padding: 20px 25px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Cores por gênero - IGUAL AO FEED (cores claras) */
+.user-post-card.male {
+  background-color: #e0f0ff; /* azul claro IGUAL AO FEED */
+  color: #333;
+}
+
+.user-post-card.female {
+  background-color: #ffe0e6; /* rosa claro IGUAL AO FEED */
+  color: #333;
+}
+
+/* Hover do card */
+.user-post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Cabeçalho da pergunta */
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.post-date {
+  font-size: 13px;
+  color: #666;
+}
+
+.post-stats {
+  display: flex;
+  gap: 15px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Pergunta */
+.post-question {
+  font-size: 17px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+/* Ações da pergunta */
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.reply-count {
+  font-size: 14px;
+  color: #666;
+  font-weight: bold;
+}
+
+.reply-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reply-button:hover {
+  background-color: #45a049;
+}
+
+/* Mensagem quando não há perguntas */
+.no-questions {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.no-questions-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #ccc;
+}
+
+.no-questions h3 {
+  font-size: 20px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.no-questions p {
+  color: #888;
+  margin-bottom: 20px;
+}
+
+/* ============ MODO ESCURO ============ */
+
+/* Body no modo escuro */
+body.dark-mode {
+  background-color: #000;
+}
+
+/* Container do perfil no modo escuro */
+body.dark-mode .profile-container {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Header no modo escuro */
+body.dark-mode .profile-header {
+  background-color: #1a1a1a;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Botões no modo escuro */
+body.dark-mode .ask-button {
+  background-color: #2e7d32;
+}
+
+body.dark-mode .ask-button:hover {
+  background-color: #1b5e20;
+}
+
+body.dark-mode .back-button {
+  background-color: #555;
+}
+
+body.dark-mode .back-button:hover {
+  background-color: #444;
+}
+
+body.dark-mode .dark-mode-button {
+  color: #ffd700;
+  border-color: #555;
+  background-color: #333;
+}
+
+/* Logo no modo escuro */
+body.dark-mode .logo-ask {
+  color: #66bb6a;
+}
+
+body.dark-mode .logo-me {
+  color: #64b5f6;
+}
+
+/* Avatar no header no modo escuro */
+body.dark-mode .header-avatar {
+  border-color: #66bb6a;
+}
+
+body.dark-mode .header-avatar:hover {
+  border-color: #4caf50;
+}
+
+/* Dropdown no modo escuro */
+body.dark-mode .dropdown-menu {
+  background-color: #1a1a1a;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .dropdown-header {
+  background-color: #2a2a2a;
+  border-bottom-color: #444;
+}
+
+body.dark-mode .dropdown-user-name {
+  color: #fff;
+}
+
+body.dark-mode .dropdown-user-email {
+  color: #aaa;
+}
+
+body.dark-mode .dropdown-divider {
+  background-color: #444;
+}
+
+body.dark-mode .dropdown-item {
+  color: #fff;
+}
+
+body.dark-mode .dropdown-item:hover {
+  background-color: #333;
+}
+
+body.dark-mode .dropdown-item.logout {
+  color: #ff6b6b;
+}
+
+body.dark-mode .dropdown-item.logout:hover {
+  background-color: #4a1e41;
+}
+
+/* ===== CABEÇALHO DO PERFIL NO MODO ESCURO ===== */
+body.dark-mode .profile-header-section.male {
+  background-color: #1a365d; /* Azul bem escuro */
+  color: #e0f2fe; /* Azul bem claro para texto */
+  border: 1px solid #2d4a7a; /* Borda azul escuro */
+}
+
+body.dark-mode .profile-header-section.female {
+  background-color: #4a1e41; /* Roxo/rosa escuro */
+  color: #fce7f3; /* Rosa muito claro para texto */
+  border: 1px solid #6d2c62; /* Borda rosa escuro */
+}
+
+/* Textos no cabeçalho no modo escuro */
+body.dark-mode .profile-name {
+  color: inherit; /* Herda a cor do cabeçalho (e0f2fe ou fce7f3) */
+}
+
+body.dark-mode .profile-bio {
+  color: rgba(255, 255, 255, 0.8); /* Branco semi-transparente */
+}
+
+/* Estatísticas no modo escuro */
+body.dark-mode .stat-number {
+  color: #66bb6a;
+}
+
+body.dark-mode .stat-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Título da seção no modo escuro */
+body.dark-mode .section-title {
+  color: #fff;
+  border-bottom: 3px solid #66bb6a;
+}
+
+/* ===== CARDS DE PERGUNTAS NO MODO ESCURO ===== */
+body.dark-mode .user-post-card {
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .user-post-card:hover {
+  box-shadow: 0 6px 15px rgba(255, 255, 255, 0.1);
+}
+
+/* CORES DOS CARDS NO MODO ESCURO - TONS ESCUROS COMO NA IMAGEM */
+body.dark-mode .user-post-card.male {
+  background-color: #1a365d; /* Azul bem escuro */
+  color: #e0f2fe; /* Azul bem claro para texto */
+  border: 1px solid #2d4a7a; /* Borda azul escuro */
+}
+
+body.dark-mode .user-post-card.female {
+  background-color: #4a1e41; /* Roxo/rosa escuro */
+  color: #fce7f3; /* Rosa muito claro para texto */
+  border: 1px solid #6d2c62; /* Borda rosa escuro */
+}
+
+/* Textos nos cards no modo escuro */
+body.dark-mode .post-question {
+  color: inherit; /* Herda a cor do card (e0f2fe ou fce7f3) */
+}
+
+body.dark-mode .post-date,
+body.dark-mode .stat,
+body.dark-mode .reply-count {
+  color: rgba(255, 255, 255, 0.7); /* Branco semi-transparente */
+}
+
+/* Botão responder no modo escuro */
+body.dark-mode .reply-button {
+  background-color: #2e7d32;
+  color: white;
+}
+
+body.dark-mode .reply-button:hover {
+  background-color: #1b5e20;
+}
+
+/* Mensagem sem perguntas no modo escuro */
+body.dark-mode .no-questions {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+body.dark-mode .no-questions h3 {
+  color: #ccc;
+}
+
+body.dark-mode .no-questions p {
+  color: #aaa;
+}
+
+/* ============ BOTÃO EDITAR PERFIL ============ */
+.profile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.edit-profile-button {
+    background-color: transparent;
+    color: #4caf50;
+    border: 1px solid #4caf50;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.edit-profile-button:hover {
+    background-color: #4caf50;
+    color: white;
+}
+
+/* ============ MODAL DE EDIÇÃO ============ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.edit-modal {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.modal-close:hover {
+    color: #e53935;
+    background-color: #f5f5f5;
+}
+
+.modal-content {
+    padding: 25px;
+}
+
+/* Seção de upload de avatar */
+.avatar-upload-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avatar-preview {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+}
+
+.edit-avatar-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #4caf50;
+}
+
+.uploading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.uploading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4caf50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.upload-avatar-button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-avatar-button:hover:not(:disabled) {
+    background-color: #45a049;
+}
+
+.upload-avatar-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.upload-hint {
+    color: #666;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+/* Seção de edição da bio */
+.bio-edit-section {
+    margin-bottom: 20px;
+}
+
+.bio-edit-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+.bio-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+
+.bio-textarea:focus {
+    outline: none;
+    border-color: #4caf50;
+}
+
+.bio-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Ações do modal */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding: 20px 25px;
+    border-top: 1px solid #eee;
+}
+
+.modal-cancel, .modal-save {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    border: none;
+}
+
+.modal-cancel {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.modal-cancel:hover {
+    background-color: #e0e0e0;
+}
+
+.modal-save {
+    background-color: #4caf50;
+    color: white;
+}
+
+.modal-save:hover:not(:disabled) {
+    background-color: #45a049;
+}
+
+.modal-save:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* ============ MODO ESCURO - MODAL ============ */
+body.dark-mode .edit-modal {
+    background-color: #1a1a1a;
+    color: #fff;
+}
+
+body.dark-mode .modal-header {
+    border-bottom-color: #444;
+}
+
+body.dark-mode .modal-header h2 {
+    color: #fff;
+}
+
+body.dark-mode .modal-close {
+    color: #aaa;
+}
+
+body.dark-mode .modal-close:hover {
+    color: #ff6b6b;
+    background-color: #333;
+}
+
+body.dark-mode .bio-edit-section label {
+    color: #fff;
+}
+
+body.dark-mode .bio-textarea {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #fff;
+}
+
+body.dark-mode .bio-textarea:focus {
+    border-color: #66bb6a;
+}
+
+body.dark-mode .bio-counter {
+    color: #aaa;
+}
+
+body.dark-mode .upload-hint {
+    color: #aaa;
+}
+
+body.dark-mode .modal-cancel {
+    background-color: #333;
+    color: #fff;
+}
+
+body.dark-mode .modal-cancel:hover {
+    background-color: #444;
+}
+
+body.dark-mode .modal-save {
+    background-color: #2e7d32;
+}
+
+body.dark-mode .modal-save:hover:not(:disabled) {
+    background-color: #1b5e20;
+}
+
+body.dark-mode .upload-avatar-button {
+    background-color: #2e7d32;
+}
+
+body.dark-mode .upload-avatar-button:hover:not(:disabled) {
+    background-color: #1b5e20;
+}
+
+/* Responsividade para o modal */
+@media (max-width: 600px) {
+    .edit-modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+    }
+    
+    .modal-actions {
+        padding: 15px 20px;
+    }
+    
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-cancel, .modal-save {
+        width: 100%;
+    }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .profile-content {
+    max-width: 95%;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .profile-header-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .profile-stats {
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .user-post-card {
+    max-width: 100%;
+    padding: 15px 20px;
+  }
+
+  .profile-header {
+    padding: 12px 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .section-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .profile-name {
+    font-size: 28px;
+  }
+
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  /* Ajuste dropdown em mobile */
+  .dropdown-menu {
+    right: -50px;
+    width: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-stats {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .post-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .post-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .post-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .reply-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .ask-button,
+  .back-button,
+  .dark-mode-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Avatar dropdown em telas muito pequenas */
+  .dropdown-menu {
+    width: 200px;
+    right: -30px;
+  }
+
+  .dropdown-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+}

@@ -7,6 +7,8 @@ import ComoFunciona from './pages/ComoFunciona';
 import Politicas from './pages/Politicas';
 import Login from './pages/Login';
 import Registro from './pages/Registro'; // ✅ Importar a nova página
+import Feed from './pages/Feed';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/politicas" element={<Politicas />} />
           <Route path="/login" element={<Login />} />
           <Route path='/registro' element={<Registro />} />
+          <Route path='/feed' element={<Feed />} />
+          <Route path='/profile' element={<Profile/>} />
         </Routes>
       </Router>
     </AuthProvider>
