@@ -1,15 +1,24 @@
+// src/pages/Profile.tsx
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { userService } from '../services/userService';
+import Header from '../components/Header';
 import './style_css/Profile.css';
+
+const API_BASE_URL = 'http://localhost:8000';
 
 interface User {
   id: number;
   name: string;
-  gender: 'male' | 'female';
-  bio: string;
-  avatar_url?: string;
-  join_date: string;
+  nickname: string;
+  gender: 'masculino' | 'feminino' | 'outro' | 'prefiro_nao_dizer';
+  bio: string | null;
+  avatar_url: string | null;
+  level: number;
+  xp: number;
+  created_at: string;
+  email?: string;
 }
 
 interface UserPost {
@@ -23,85 +32,98 @@ interface UserPost {
 function Profile() {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>();
-  const { user: currentUser, logout } = useAuth();
+  const { user: currentUser, logout, updateUser } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [profileUser, setProfileUser] = useState<User | null>(null);
   const [userPosts, setUserPosts] = useState<UserPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editName, setEditName] = useState('');
+  const [editNickname, setEditNickname] = useState('');
   const [editBio, setEditBio] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string>('');
   
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fechar dropdown ao clicar fora
+  // Função para garantir URL completa
+  const ensureFullUrl = (url: string | null): string => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('/')) return `${API_BASE_URL}${url}`;
+    return `${API_BASE_URL}/${url}`;
+  };
+
+  // Função para obter avatar padrão baseado no gênero
+  const getDefaultAvatar = (genderClass: string): string => {
+    if (genderClass === 'male') {
+      return `${API_BASE_URL}/static/images/avatar-male-default.png`;
+    }
+    if (genderClass === 'female') {
+      return `${API_BASE_URL}/static/images/avatar-female-default.png`;
+    }
+    return `${API_BASE_URL}/static/images/avatar-default.png`;
+  };
+
+  // Obter URL do avatar ou padrão
+  const getAvatarUrl = (user: User | null, genderClass: string) => {
+    if (user?.avatar_url) {
+      return ensureFullUrl(user.avatar_url);
+    }
+    return getDefaultAvatar(genderClass);
+  };
+
+  // Buscar dados do perfil da API
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        
+        const targetUserId = userId || currentUser?.id;
+        
+        if (!targetUserId) {
+          navigate('/login');
+          return;
+        }
+
+        // 1. Buscar perfil do usuário
+        const userData = await userService.getUserProfile(targetUserId);
+        setProfileUser(userData);
+        setEditNickname(userData.nickname || userData.name);
+        setEditBio(userData.bio || '');
+        
+        const genderClass = getGenderClass(userData.gender);
+        const avatarUrl = userData.avatar_url 
+          ? ensureFullUrl(userData.avatar_url)
+          : getDefaultAvatar(genderClass);
+        setAvatarPreview(avatarUrl);
+
+        // 2. Buscar posts do usuário
+        try {
+          const postsData = await userService.getUserPosts(targetUserId);
+          setUserPosts(postsData.posts || []);
+        } catch (postsError) {
+          console.log('Posts não disponíveis:', postsError);
+          setUserPosts([]);
+        }
+        
+      } catch (error: any) {
+        console.error('Erro ao carregar perfil:', error);
+        setError('Erro ao carregar perfil. Tente novamente.');
+        
+        if (error.response?.status === 404) {
+          setError('Usuário não encontrado.');
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Dados mockados do usuário
-  useEffect(() => {
-    setTimeout(() => {
-      const mockUser: User = {
-        id: 1,
-        name: 'Ana Silva',
-        gender: 'female',
-        bio: 'Apaixonada por tecnologia e sempre buscando aprender coisas novas. Adoro compartilhar conhecimento e ajudar outras pessoas.',
-        avatar_url: '/images/avatar-female.png',
-        join_date: '2024-01-15',
-      };
-
-      const mockPosts: UserPost[] = [
-        {
-          id: 1,
-          question: 'Como posso melhorar minha produtividade no trabalho remoto?',
-          created_at: '2025-12-13T08:30:00Z',
-          reply_count: 12,
-          like_count: 45,
-        },
-        {
-          id: 2,
-          question: 'Quais são as melhores práticas para estudar programação de forma eficiente?',
-          created_at: '2025-11-25T14:20:00Z',
-          reply_count: 8,
-          like_count: 32,
-        },
-        {
-          id: 3,
-          question: 'Como manter o equilíbrio entre vida pessoal e profissional?',
-          created_at: '2025-10-10T10:15:00Z',
-          reply_count: 15,
-          like_count: 67,
-        },
-        {
-          id: 4,
-          question: 'Dicas para apresentações em público sem nervosismo?',
-          created_at: '2025-09-05T16:45:00Z',
-          reply_count: 6,
-          like_count: 28,
-        },
-      ];
-
-      setProfileUser(mockUser);
-      setEditName(mockUser.name);
-      setEditBio(mockUser.bio);
-      setUserPosts(mockPosts);
-      setLoading(false);
-    }, 500);
-  }, [userId]);
+    if (currentUser || userId) {
+      fetchUserProfile();
+    }
+  }, [userId, currentUser, navigate]);
 
   const handleBackClick = () => {
     navigate(-1);
@@ -118,30 +140,31 @@ function Profile() {
   };
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const handleOptionClick = (option: string) => {
-    setShowDropdown(false);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', JSON.stringify(newDarkMode));
     
-    if (option === 'feed') {
-      navigate('/feed');
-    } else if (option === 'logout') {
-      logout();
-      navigate('/login');
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+      document.body.style.backgroundColor = '#000';
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.body.style.backgroundColor = '#f5f5f5';
     }
   };
 
   // Abrir modal de edição
   const handleEditClick = () => {
     if (profileUser) {
-      setEditName(profileUser.name);
-      setEditBio(profileUser.bio);
-      setAvatarPreview(profileUser.avatar_url || '');
+      setEditNickname(profileUser.nickname || profileUser.name);
+      setEditBio(profileUser.bio || '');
+      
+      const genderClass = getGenderClass(profileUser.gender);
+      const avatarUrl = profileUser.avatar_url 
+        ? ensureFullUrl(profileUser.avatar_url)
+        : getDefaultAvatar(genderClass);
+      
+      setAvatarPreview(avatarUrl);
       setShowEditModal(true);
     }
   };
@@ -149,62 +172,84 @@ function Profile() {
   // Fechar modal
   const handleCloseModal = () => {
     setShowEditModal(false);
+    setError('');
   };
 
-  // Salvar edições
-  const handleSaveChanges = () => {
-    if (profileUser) {
-      // Validação básica
-      if (!editName.trim()) {
-        alert('Por favor, insira um nome de usuário');
-        return;
-      }
+  // Upload de avatar
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !profileUser) return;
 
-      // Aqui você faria a requisição para a API
-      const updatedUser = {
-        ...profileUser,
-        name: editName,
-        bio: editBio,
-        avatar_url: avatarPreview || profileUser.avatar_url
-      };
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      alert('Por favor, selecione uma imagem (JPEG, PNG, GIF ou WebP)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+    
+    try {
+      const result = await userService.uploadAvatar(profileUser.id, file);
       
-      setProfileUser(updatedUser);
-      setShowEditModal(false);
+      const fullAvatarUrl = ensureFullUrl(result.avatar_url);
+      setAvatarPreview(fullAvatarUrl);
       
-      // Simular requisição
-      console.log('Salvando alterações:', updatedUser);
-      alert('Alterações salvas com sucesso!');
+      if (profileUser) {
+        const updatedUser = { ...profileUser, avatar_url: result.avatar_url };
+        setProfileUser(updatedUser);
+        
+        if (currentUser?.id === profileUser.id) {
+          updateUser(updatedUser);
+        }
+      }
+      
+      alert('Foto atualizada com sucesso!');
+      
+    } catch (error: any) {
+      console.error('Erro no upload:', error);
+      setError(error.response?.data?.detail || 'Erro ao fazer upload da imagem');
+    } finally {
+      setUploading(false);
     }
   };
 
-  // Lidar com upload de avatar
-  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validar tipo de arquivo
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        alert('Por favor, selecione uma imagem (JPEG, PNG, GIF ou WebP)');
-        return;
-      }
+  // Salvar edições (nickname e bio)
+  const handleSaveChanges = async () => {
+    if (!profileUser || !editNickname.trim()) {
+      alert('Por favor, insira um nickname válido');
+      return;
+    }
 
-      // Validar tamanho (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('A imagem deve ter no máximo 5MB');
-        return;
-      }
-
-      setUploading(true);
+    setUploading(true);
+    setError('');
+    
+    try {
+      const updatedProfile = await userService.updateProfile(profileUser.id, {
+        nickname: editNickname,
+        bio: editBio || null
+      });
       
-      // Simular upload
-      setTimeout(() => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setAvatarPreview(reader.result as string);
-          setUploading(false);
-        };
-        reader.readAsDataURL(file);
-      }, 1000);
+      const updatedUser = { ...profileUser, ...updatedProfile };
+      setProfileUser(updatedUser);
+      
+      if (currentUser?.id === profileUser.id) {
+        updateUser(updatedUser);
+      }
+      
+      setShowEditModal(false);
+      alert('Perfil atualizado com sucesso!');
+      
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', error);
+      setError(error.response?.data?.detail || 'Erro ao atualizar perfil');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -213,185 +258,141 @@ function Profile() {
     fileInputRef.current?.click();
   };
 
-  // Gerenciar modo escuro
+  // Modo escuro
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
     if (savedDarkMode) {
-      setDarkMode(JSON.parse(savedDarkMode));
+      const isDark = JSON.parse(savedDarkMode);
+      setDarkMode(isDark);
+      
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+        document.body.style.backgroundColor = '#000';
+      } else {
+        document.body.classList.remove('dark-mode');
+        document.body.style.backgroundColor = '#f5f5f5';
+      }
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    
-    if (darkMode) {
-      document.body.classList.add('dark-mode');
-      document.body.style.backgroundColor = '#000';
-    } else {
-      document.body.classList.remove('dark-mode');
-      document.body.style.backgroundColor = '#f5f5f5';
-    }
-  }, [darkMode]);
-
+  // Funções auxiliares
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
   };
 
   const formatJoinDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = { 
-      month: 'long', 
-      year: 'numeric' 
+    try {
+      const date = new Date(dateString);
+      const options: Intl.DateTimeFormatOptions = { 
+        month: 'long', 
+        year: 'numeric' 
+      };
+      return `Membro desde ${date.toLocaleDateString('pt-BR', options)}`;
+    } catch {
+      return 'Data de registro não disponível';
+    }
+  };
+
+  // Converter gênero para classe CSS
+  const getGenderClass = (gender: string): string => {
+    const genderMap: Record<string, string> = {
+      'masculino': 'male',
+      'feminino': 'female',
+      'outro': 'other',
+      'prefiro_nao_dizer': 'other'
     };
-    return `Membro desde ${date.toLocaleDateString('pt-BR', options)}`;
+    return genderMap[gender?.toLowerCase()] || 'other';
   };
 
   if (loading) {
     return (
       <div className="profile-container">
-        <div className="profile-header">
-          <div className="logo" onClick={() => navigate('/')}>
-            <span className="logo-ask">ASK</span>
-            <span className="logo-me">ME</span>
-          </div>
-          <div className="header-actions">
-            <button className="dark-mode-button" onClick={toggleDarkMode}>
-              {darkMode ? '☀️' : '🌙'}
-            </button>
-          </div>
-        </div>
+        <Header 
+          darkMode={darkMode}
+          onToggleDarkMode={toggleDarkMode}
+          onAskClick={handleAskClick}
+        />
         <div className="profile-content" style={{ textAlign: 'center', padding: '50px' }}>
+          <div className="loading-spinner"></div>
           <p>Carregando perfil...</p>
         </div>
       </div>
     );
   }
 
-  if (!profileUser) {
+  if (error || !profileUser) {
     return (
       <div className="profile-container">
-        <div className="profile-header">
-          <div className="logo" onClick={() => navigate('/')}>
-            <span className="logo-ask">ASK</span>
-            <span className="logo-me">ME</span>
-          </div>
-          <button className="back-button" onClick={handleBackClick}>
-            ← Voltar
-          </button>
-        </div>
+        <Header 
+          darkMode={darkMode}
+          onToggleDarkMode={toggleDarkMode}
+          onAskClick={handleAskClick}
+        />
         <div className="profile-content" style={{ textAlign: 'center', padding: '50px' }}>
-          <p>Usuário não encontrado.</p>
+          <div className="error-icon">⚠️</div>
+          <h3>{error || 'Usuário não encontrado'}</h3>
+          <p>O perfil que você está tentando acessar não está disponível.</p>
+          <button className="ask-button" onClick={() => navigate('/')}>
+            Voltar para o início
+          </button>
         </div>
       </div>
     );
   }
 
+  const genderClass = getGenderClass(profileUser.gender);
+  const isOwnProfile = !userId || userId === currentUser?.id?.toString();
+  const displayName = profileUser.nickname || profileUser.name || 'Usuário';
+
   return (
     <div className="profile-container">
-      {/* Header com Avatar */}
-      <header className="profile-header">
-        <div className="logo" onClick={() => navigate('/')}>
-          <span className="logo-ask">ASK</span>
-          <span className="logo-me">ME</span>
-        </div>
-        
-        <div className="header-actions">
-          <button className="ask-button" onClick={handleAskClick}>
-            Perguntar ❓
-          </button>
-          <button className="dark-mode-button" onClick={toggleDarkMode}>
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-          
-          {/* Avatar com Dropdown */}
-          <div className="avatar-dropdown-container" ref={dropdownRef}>
-            <button 
-              className="header-avatar-button"
-              onClick={toggleDropdown}
-            >
-              <img
-                src={profileUser.avatar_url || 
-                     (profileUser.gender === 'male' 
-                       ? '/images/avatar-male.png' 
-                       : '/images/avatar-female.png')}
-                alt={profileUser.name}
-                className="header-avatar"
-              />
-            </button>
-            
-            {/* Dropdown Menu */}
-            {showDropdown && (
-              <div className={`dropdown-menu ${darkMode ? 'dark' : ''}`}>
-                <div className="dropdown-header">
-                  <img
-                    src={profileUser.avatar_url || 
-                         (profileUser.gender === 'male' 
-                           ? '/images/avatar-male.png' 
-                           : '/images/avatar-female.png')}
-                    alt={profileUser.name}
-                    className="dropdown-avatar"
-                  />
-                  <div className="dropdown-user-info">
-                    <div className="dropdown-user-name">{profileUser.name}</div>
-                  </div>
-                </div>
-                
-                <div className="dropdown-divider"></div>
-                
-                <button 
-                  className="dropdown-item"
-                  onClick={() => handleOptionClick('feed')}
-                >
-                  <span className="dropdown-icon">🏠</span>
-                  <span>Feed</span>
-                </button>
-                
-                <button 
-                  className="dropdown-item logout"
-                  onClick={() => handleOptionClick('logout')}
-                >
-                  <span className="dropdown-icon">🚪</span>
-                  <span>Sair</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header 
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        onAskClick={handleAskClick}
+      />
 
-      {/* Conteúdo do Perfil */}
       <main className="profile-content">
-        <section className={`profile-header-section ${profileUser.gender}`}>
+        <section className={`profile-header-section ${genderClass}`}>
           <img
-            src={profileUser.avatar_url || 
-                 (profileUser.gender === 'male' 
-                   ? '/images/avatar-male.png' 
-                   : '/images/avatar-female.png')}
-            alt={profileUser.name}
+            src={getAvatarUrl(profileUser, genderClass)}
+            alt={displayName}
             className="profile-avatar"
+            onError={(e) => {
+              e.currentTarget.src = getDefaultAvatar(genderClass);
+            }}
           />
           <div className="profile-info">
             <div className="profile-header-actions">
-              <h1 className="profile-name">{profileUser.name}</h1>
-              <button 
-                className="edit-profile-button"
-                onClick={handleEditClick}
-                title="Editar perfil"
-              >
-                ✏️ Editar
-              </button>
+              <h1 className="profile-name">{displayName}</h1>
+              {isOwnProfile && (
+                <button 
+                  className="edit-profile-button"
+                  onClick={handleEditClick}
+                  title="Editar perfil"
+                >
+                  ✏️ Editar
+                </button>
+              )}
             </div>
             
-            <p className="profile-bio">{profileUser.bio}</p>
-            <p style={{ color: darkMode ? '#aaa' : '#666', fontSize: '14px' }}>
-              {formatJoinDate(profileUser.join_date)}
+            <p className="profile-bio">
+              {profileUser.bio || 'Este usuário ainda não adicionou uma bio.'}
+            </p>
+            
+            <p style={{ color: darkMode ? '#aaa' : '#666', fontSize: '14px', marginTop: '8px' }}>
+              {formatJoinDate(profileUser.created_at)}
             </p>
             
             <div className="profile-stats">
@@ -418,28 +419,30 @@ function Profile() {
         <section className="profile-questions-section">
           <h2 className="section-title">
             <span className="section-title-icon">❓</span>
-            Perguntas de {profileUser.name.split(' ')[0]}
+            Perguntas de {displayName}
           </h2>
 
           {userPosts.length === 0 ? (
             <div className="no-questions">
               <div className="no-questions-icon">🤔</div>
               <h3>Nenhuma pergunta ainda</h3>
-              <p>{profileUser.name.split(' ')[0]} ainda não fez nenhuma pergunta na comunidade.</p>
-              <button 
-                className="ask-button" 
-                onClick={handleAskClick}
-                style={{ marginTop: '20px' }}
-              >
-                Faça sua primeira pergunta!
-              </button>
+              <p>{displayName} ainda não fez nenhuma pergunta na comunidade.</p>
+              {isOwnProfile && (
+                <button 
+                  className="ask-button" 
+                  onClick={handleAskClick}
+                  style={{ marginTop: '20px' }}
+                >
+                  Faça sua primeira pergunta!
+                </button>
+              )}
             </div>
           ) : (
             <div className="user-posts-list">
               {userPosts.map((post) => (
                 <div
                   key={post.id}
-                  className={`user-post-card ${profileUser.gender}`}
+                  className={`user-post-card ${genderClass}`}
                 >
                   <div className="post-meta">
                     <span className="post-date">{formatDate(post.created_at)}</span>
@@ -476,28 +479,37 @@ function Profile() {
         </section>
       </main>
 
-      {/* Modal de Edição */}
       {showEditModal && (
         <div className="modal-overlay">
           <div className={`edit-modal ${darkMode ? 'dark' : ''}`}>
             <div className="modal-header">
               <h2>Editar Perfil</h2>
-              <button className="modal-close" onClick={handleCloseModal}>
+              <button 
+                className="modal-close" 
+                onClick={handleCloseModal}
+                disabled={uploading}
+              >
                 ×
               </button>
             </div>
             
             <div className="modal-content">
-              {/* Upload de Avatar */}
+              {error && (
+                <div className="modal-error">
+                  ⚠️ {error}
+                </div>
+              )}
+              
               <div className="avatar-upload-section">
                 <div className="avatar-preview">
                   <img
-                    src={avatarPreview || profileUser.avatar_url || 
-                         (profileUser.gender === 'male' 
-                           ? '/images/avatar-male.png' 
-                           : '/images/avatar-female.png')}
+                    src={avatarPreview || getAvatarUrl(profileUser, genderClass)}
                     alt="Preview"
                     className="edit-avatar-preview"
+                    onError={(e) => {
+                      console.error('Erro ao carregar avatar no modal:', e.currentTarget.src);
+                      e.currentTarget.src = getDefaultAvatar(genderClass);
+                    }}
                   />
                   {uploading && (
                     <div className="uploading-overlay">
@@ -525,24 +537,23 @@ function Profile() {
                 <p className="upload-hint">JPEG, PNG, GIF ou WebP. Máx. 5MB</p>
               </div>
               
-              {/* Edição do Nickname */}
               <div className="name-edit-section">
                 <label htmlFor="nickname">Nome de usuário (nickname)</label>
                 <input
                   type="text"
                   id="nickname"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+                  value={editNickname}
+                  onChange={(e) => setEditNickname(e.target.value)}
                   placeholder="Seu nome de usuário"
                   maxLength={30}
                   className="name-input"
+                  disabled={uploading}
                 />
                 <div className="name-counter">
-                  {editName.length}/30 caracteres
+                  {editNickname.length}/30 caracteres
                 </div>
               </div>
               
-              {/* Edição da Bio */}
               <div className="bio-edit-section">
                 <label htmlFor="bio">Bio</label>
                 <textarea
@@ -553,6 +564,7 @@ function Profile() {
                   rows={4}
                   maxLength={500}
                   className="bio-textarea"
+                  disabled={uploading}
                 />
                 <div className="bio-counter">
                   {editBio.length}/500 caracteres
@@ -561,15 +573,19 @@ function Profile() {
             </div>
             
             <div className="modal-actions">
-              <button className="modal-cancel" onClick={handleCloseModal}>
+              <button 
+                className="modal-cancel" 
+                onClick={handleCloseModal}
+                disabled={uploading}
+              >
                 Cancelar
               </button>
               <button 
                 className="modal-save"
                 onClick={handleSaveChanges}
-                disabled={uploading || !editName.trim()}
+                disabled={uploading || !editNickname.trim()}
               >
-                Salvar Alterações
+                {uploading ? 'Salvando...' : 'Salvar Alterações'}
               </button>
             </div>
           </div>

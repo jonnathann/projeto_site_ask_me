@@ -1,6 +1,8 @@
+// src/pages/Feed.tsx
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
+import Header from '../components/Header';
 import './style_css/Feed.css';
 
 interface Post {
@@ -41,6 +43,20 @@ function Feed() {
     },
   ];
 
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', JSON.stringify(newDarkMode));
+    
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+      document.body.style.backgroundColor = '#000';
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.body.style.backgroundColor = '#f5f5f5';
+    }
+  };
+
   const handleAskClick = () => {
     if (user) navigate('/perguntar');
     else navigate('/login');
@@ -51,51 +67,31 @@ function Feed() {
     else navigate('/login');
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-  // Adiciona/remover classe no body para dark mode
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark-mode');
-      document.body.style.backgroundColor = '#000';
-    } else {
-      document.body.classList.remove('dark-mode');
-      document.body.style.backgroundColor = '#f5f5f5';
-    }
-    
-    // Salva preferência
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
-
-  // Carrega preferência salva
+  // Carregar preferência de modo escuro
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
     if (savedDarkMode) {
-      setDarkMode(JSON.parse(savedDarkMode));
+      const isDark = JSON.parse(savedDarkMode);
+      setDarkMode(isDark);
+      
+      if (isDark) {
+        document.body.classList.add('dark-mode');
+        document.body.style.backgroundColor = '#000';
+      } else {
+        document.body.classList.remove('dark-mode');
+        document.body.style.backgroundColor = '#f5f5f5';
+      }
     }
   }, []);
 
   return (
     <div className="home-container">
-      {/* Header */}
-      <header className="header">
-        <div className="logo">
-          <span className="logo-ask">ASK</span>
-          <span className="logo-me">ME</span>
-        </div>
-        <div className="header-actions">
-          <button className="ask-button" onClick={handleAskClick}>
-            Perguntar ❓
-          </button>
-          <button className="dark-mode-button" onClick={toggleDarkMode}>
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-        </div>
-      </header>
+      <Header 
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        onAskClick={handleAskClick}
+      />
 
-      {/* Feed */}
       <main className="feed-section">
         <h2 className="section-title">Últimas Perguntas da Comunidade</h2>
 
