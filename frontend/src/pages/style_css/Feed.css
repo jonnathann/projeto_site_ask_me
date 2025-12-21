@@ -5,6 +5,30 @@
   transition: background-color 0.3s ease;
 }
 
+/* Estilo para o tempo relativo */
+.post-time {
+  font-size: 12px;
+  color: #666;
+  cursor: help; /* Mostra que tem tooltip */
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: #f0f0f0;
+  transition: all 0.2s;
+}
+
+.post-time:hover {
+  background-color: #e0e0e0;
+}
+
+.dark-mode .post-time {
+  color: #aaa;
+  background-color: #2d3748;
+}
+
+.dark-mode .post-time:hover {
+  background-color: #374151;
+}
+
 /* Header */
 .header {
   display: flex;
@@ -98,6 +122,12 @@
 
 .post-card.female {
   background-color: #ffe0e6; /* rosa claro */
+  color: #333;
+}
+
+/* ADICIONADO: Estilo para "Prefiro não dizer" */
+.post-card.other {
+  background-color: #e8f5e9; /* verde claro */
   color: #333;
 }
 
@@ -259,6 +289,13 @@ body.dark-mode .post-card.female {
   border: 1px solid #6d2c62; /* Borda rosa escuro */
 }
 
+/* ADICIONADO: Estilo para "Prefiro não dizer" no modo escuro */
+body.dark-mode .post-card.other {
+  background-color: #1b3a27; /* verde musgo escuro */
+  color: #e8f5e9; /* verde muito claro para texto */
+  border: 1px solid #2e5a3c;
+}
+
 /* Data do post no modo escuro */
 body.dark-mode .post-date {
   color: #aaa; /* Cinza claro */
@@ -278,6 +315,91 @@ body.dark-mode .reply-button:hover {
 body.dark-mode .avatar-image {
   border: 2px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+/* ===== HOVER NO NICKNAME E AVATAR ===== */
+
+/* Avatar clicável */
+.post-avatar.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.post-avatar.clickable:hover {
+  transform: scale(1.05);
+}
+
+/* Nickname clicável - APENAS underline no hover (mantém cor preta) */
+.post-user.clickable:hover {
+  text-decoration: underline;
+}
+
+/* ===== META INFO ===== */
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+body.dark-mode .post-meta {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.post-category {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-weight: 600;
+  border: 1px solid;
+  margin-left: 10px;
+}
+
+.post-stats {
+  display: flex;
+  gap: 15px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #666;
+}
+
+body.dark-mode .stat {
+  color: #aaa;
+}
+
+/* Botão Ver Perfil (opcional) - Mudei para verde pra combinar com o tema */
+.profile-button {
+  background: transparent;
+  border: 1px solid #4caf50;
+  color: #4caf50;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all 0.2s ease;
+}
+
+.profile-button:hover {
+  background: #4caf50;
+  color: white;
+}
+
+body.dark-mode .profile-button {
+  border-color: #66bb6a;
+  color: #66bb6a;
+}
+
+body.dark-mode .profile-button:hover {
+  background: #66bb6a;
+  color: white;
 }
 
 /* Responsividade */

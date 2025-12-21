@@ -1,4 +1,4 @@
-// src/components/Header.tsx
+// src/components/Header.tsx - VERSÃO CORRIGIDA
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useRef, useEffect } from 'react';
@@ -41,8 +41,12 @@ function Header({ darkMode, onToggleDarkMode, onAskClick }: HeaderProps) {
     if (option === 'feed') {
       navigate('/feed');
     } else if (option === 'profile') {
-      // CORREÇÃO: Navegar para /profile sem ID
-      navigate('/profile');
+      // ✅ CORREÇÃO: Navegar para o perfil DO USUÁRIO LOGADO
+      if (currentUser && currentUser.id) {
+        navigate(`/profile/${currentUser.id}`);
+      } else {
+        navigate('/profile');
+      }
     } else if (option === 'logout') {
       logout();
       navigate('/login');
@@ -170,6 +174,7 @@ function Header({ darkMode, onToggleDarkMode, onAskClick }: HeaderProps) {
                 <span>Feed</span>
               </button>
               
+              {/* ✅ BOTÃO "MEU PERFIL" CORRIGIDO */}
               <button 
                 className="dropdown-item"
                 onClick={() => handleOptionClick('profile')}

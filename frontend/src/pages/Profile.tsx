@@ -1,9 +1,12 @@
-// src/pages/Profile.tsx
+// src/pages/Profile.tsx - VERSÃO COMPLETA SEM REDUNDÂNCIA DO 🎭
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/userService';
+import { questionService } from '../services/questionService';
 import Header from '../components/Header';
+import AskModal from '../components/AskModal';
+import { getTimeAgo } from '../utils/timeUtils';
 import './style_css/Profile.css';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -24,9 +27,20 @@ interface User {
 interface UserPost {
   id: number;
   question: string;
+  description?: string;
+  category?: string;
   created_at: string;
   reply_count: number;
   like_count: number;
+  is_anonymous?: boolean;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+  description: string;
 }
 
 function Profile() {
@@ -38,15 +52,50 @@ function Profile() {
   const [userPosts, setUserPosts] = useState<UserPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAskModal, setShowAskModal] = useState(false);
   const [editNickname, setEditNickname] = useState('');
   const [editBio, setEditBio] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [postingQuestion, setPostingQuestion] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Função para garantir URL completa
+  const safeNumber = (value: any): number => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return 0;
+    }
+    return Number(value);
+  };
+
+  const categories: Category[] = [
+    { id: 'relacionamentos', name: 'Relacionamentos', emoji: '💖', color: '#ff6b8b', description: 'Amor, namoro, casamento, família' },
+    { id: 'paquera', name: 'Paquera', emoji: '💘', color: '#ff4081', description: 'Flerte, conquista, encontros' },
+    { id: 'sexo', name: 'Sexo', emoji: '🔞', color: '#e91e63', description: 'Sexualidade, intimidade, dúvidas íntimas' },
+    { id: 'entretenimento', name: 'Entretenimento', emoji: '🎬', color: '#3f51b5', description: 'TV, séries, shows, celebridades' },
+    { id: 'filmes', name: 'Filmes', emoji: '🎞️', color: '#2196f3', description: 'Cinema, crítica, recomendações' },
+    { id: 'games', name: 'Games', emoji: '🎮', color: '#4caf50', description: 'Video games, jogos, e-sports' },
+    { id: 'livros', name: 'Livros', emoji: '📚', color: '#795548', description: 'Literatura, autores, leitura' },
+    { id: 'saude', name: 'Saúde', emoji: '⚕️', color: '#00bcd4', description: 'Bem-estar, doenças, cuidados' },
+    { id: 'vida-cotidiana', name: 'Vida Cotidiana', emoji: '🍔', color: '#ff9800', description: 'Rotina, problemas do dia a dia' },
+    { id: 'carreira', name: 'Carreira', emoji: '💼', color: '#607d8b', description: 'Trabalho, profissão, negócios' },
+    { id: 'educacao', name: 'Educação', emoji: '🎓', color: '#9c27b0', description: 'Estudos, escolas, faculdades' },
+    { id: 'comidas', name: 'Comidas', emoji: '🍕', color: '#f44336', description: 'Receitas, restaurantes, culinária' },
+    { id: 'tecnologia', name: 'Tecnologia', emoji: '💻', color: '#009688', description: 'Apps, gadgets, programação' },
+    { id: 'viagens', name: 'Viagens', emoji: '✈️', color: '#8bc34a', description: 'Turismo, destinos, hospedagem' },
+    { id: 'esportes', name: 'Esportes', emoji: '⚽', color: '#ff5722', description: 'Futebol, basquete, atividades' },
+    { id: 'musica', name: 'Música', emoji: '🎵', color: '#673ab7', description: 'Artistas, bandas, instrumentos' },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const ensureFullUrl = (url: string | null): string => {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -54,7 +103,6 @@ function Profile() {
     return `${API_BASE_URL}/${url}`;
   };
 
-  // Função para obter avatar padrão baseado no gênero
   const getDefaultAvatar = (genderClass: string): string => {
     if (genderClass === 'male') {
       return `${API_BASE_URL}/static/images/avatar-male-default.png`;
@@ -65,7 +113,6 @@ function Profile() {
     return `${API_BASE_URL}/static/images/avatar-default.png`;
   };
 
-  // Obter URL do avatar ou padrão
   const getAvatarUrl = (user: User | null, genderClass: string) => {
     if (user?.avatar_url) {
       return ensureFullUrl(user.avatar_url);
@@ -73,21 +120,65 @@ function Profile() {
     return getDefaultAvatar(genderClass);
   };
 
-  // Buscar dados do perfil da API
+  const fetchQuestionsFromBackend = async (targetUserId: number, viewerId?: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/questions/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const allQuestions = await response.json();
+        
+        const userQuestions = allQuestions.filter((q: any) => {
+          if (q.user_id !== targetUserId) return false;
+          
+          if (viewerId === targetUserId) return true;
+          
+          return !q.is_anonymous;
+        });
+        
+        return userQuestions.map((q: any) => ({
+          id: q.id,
+          question: q.title || 'Sem título',
+          description: q.description || '',
+          category: q.category || 'outros',
+          created_at: q.created_at || new Date().toISOString(),
+          reply_count: safeNumber(q.reply_count),
+          like_count: safeNumber(q.like_count),
+          is_anonymous: q.is_anonymous || false
+        }));
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('Erro ao buscar perguntas do backend:', error);
+      return [];
+    }
+  };
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
         setError('');
         
-        const targetUserId = userId || currentUser?.id;
+        let targetUserId: number;
         
-        if (!targetUserId) {
+        if (userId) {
+          targetUserId = parseInt(userId, 10);
+          if (isNaN(targetUserId)) {
+            throw new Error('ID de usuário inválido');
+          }
+        } else if (currentUser?.id) {
+          targetUserId = currentUser.id;
+        } else {
           navigate('/login');
           return;
         }
 
-        // 1. Buscar perfil do usuário
         const userData = await userService.getUserProfile(targetUserId);
         setProfileUser(userData);
         setEditNickname(userData.nickname || userData.name);
@@ -99,28 +190,24 @@ function Profile() {
           : getDefaultAvatar(genderClass);
         setAvatarPreview(avatarUrl);
 
-        // 2. Buscar posts do usuário
-        try {
-          const postsData = await userService.getUserPosts(targetUserId);
-          setUserPosts(postsData.posts || []);
-        } catch (postsError) {
-          console.log('Posts não disponíveis:', postsError);
+        const viewerId = currentUser?.id;
+        const backendPosts = await fetchQuestionsFromBackend(targetUserId, viewerId);
+        
+        if (backendPosts.length > 0) {
+          setUserPosts(backendPosts);
+        } else {
           setUserPosts([]);
         }
         
       } catch (error: any) {
-        console.error('Erro ao carregar perfil:', error);
-        setError('Erro ao carregar perfil. Tente novamente.');
-        
-        if (error.response?.status === 404) {
-          setError('Usuário não encontrado.');
-        }
+        console.error('❌ Erro ao carregar perfil:', error);
+        setError(error.response?.data?.detail || error.message || 'Erro ao carregar perfil.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (currentUser || userId) {
+    if (userId || currentUser) {
       fetchUserProfile();
     }
   }, [userId, currentUser, navigate]);
@@ -129,9 +216,59 @@ function Profile() {
     navigate(-1);
   };
 
-  const handleAskClick = () => {
-    if (currentUser) navigate('/perguntar');
-    else navigate('/login');
+  const handleOpenAskModal = () => {
+    if (currentUser) {
+      setShowAskModal(true);
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleCloseAskModal = () => {
+    setShowAskModal(false);
+  };
+
+  const handlePostQuestion = async (questionData: {
+    title: string;
+    description: string;
+    category: string;
+    anonymous: boolean;
+    media_url?: string;
+  }) => {
+    setPostingQuestion(true);
+    
+    try {
+      const newQuestion = await questionService.postQuestion({
+        title: questionData.title,
+        description: questionData.description,
+        category: questionData.category,
+        media_url: questionData.media_url || undefined,
+        is_anonymous: questionData.anonymous
+      });
+      
+      alert(`✅ Pergunta "${newQuestion.title.substring(0, 50)}..." publicada!`);
+      setShowAskModal(false);
+      
+      if (profileUser?.id === currentUser?.id) {
+        const newPost: UserPost = {
+          id: newQuestion.id,
+          question: newQuestion.title,
+          description: newQuestion.description,
+          category: newQuestion.category,
+          created_at: newQuestion.created_at,
+          reply_count: safeNumber(newQuestion.reply_count),
+          like_count: safeNumber(newQuestion.like_count),
+          is_anonymous: newQuestion.is_anonymous
+        };
+        setUserPosts(prev => [newPost, ...prev]);
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao publicar pergunta:', error);
+      alert(error.response?.data?.detail || 'Erro ao publicar pergunta');
+    } finally {
+      setPostingQuestion(false);
+    }
   };
 
   const handleReplyClick = (postId: number) => {
@@ -153,7 +290,6 @@ function Profile() {
     }
   };
 
-  // Abrir modal de edição
   const handleEditClick = () => {
     if (profileUser) {
       setEditNickname(profileUser.nickname || profileUser.name);
@@ -169,13 +305,11 @@ function Profile() {
     }
   };
 
-  // Fechar modal
-  const handleCloseModal = () => {
+  const handleCloseEditModal = () => {
     setShowEditModal(false);
     setError('');
   };
 
-  // Upload de avatar
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !profileUser) return;
@@ -219,7 +353,6 @@ function Profile() {
     }
   };
 
-  // Salvar edições (nickname e bio)
   const handleSaveChanges = async () => {
     if (!profileUser || !editNickname.trim()) {
       alert('Por favor, insira um nickname válido');
@@ -253,12 +386,10 @@ function Profile() {
     }
   };
 
-  // Abrir seletor de arquivo
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Modo escuro
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
     if (savedDarkMode) {
@@ -275,20 +406,16 @@ function Profile() {
     }
   }, []);
 
-  // Funções auxiliares
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateString;
-    }
+  const calculateStats = () => {
+    const totalReplies = userPosts.reduce((acc, post) => {
+      return acc + safeNumber(post.reply_count);
+    }, 0);
+    
+    const totalLikes = userPosts.reduce((acc, post) => {
+      return acc + safeNumber(post.like_count);
+    }, 0);
+    
+    return { totalReplies, totalLikes };
   };
 
   const formatJoinDate = (dateString: string) => {
@@ -304,7 +431,6 @@ function Profile() {
     }
   };
 
-  // Converter gênero para classe CSS
   const getGenderClass = (gender: string): string => {
     const genderMap: Record<string, string> = {
       'masculino': 'male',
@@ -321,7 +447,7 @@ function Profile() {
         <Header 
           darkMode={darkMode}
           onToggleDarkMode={toggleDarkMode}
-          onAskClick={handleAskClick}
+          onAskClick={handleOpenAskModal}
         />
         <div className="profile-content" style={{ textAlign: 'center', padding: '50px' }}>
           <div className="loading-spinner"></div>
@@ -337,7 +463,7 @@ function Profile() {
         <Header 
           darkMode={darkMode}
           onToggleDarkMode={toggleDarkMode}
-          onAskClick={handleAskClick}
+          onAskClick={handleOpenAskModal}
         />
         <div className="profile-content" style={{ textAlign: 'center', padding: '50px' }}>
           <div className="error-icon">⚠️</div>
@@ -352,15 +478,16 @@ function Profile() {
   }
 
   const genderClass = getGenderClass(profileUser.gender);
-  const isOwnProfile = !userId || userId === currentUser?.id?.toString();
+  const isOwnProfile = !userId || (currentUser && parseInt(userId, 10) === currentUser.id);
   const displayName = profileUser.nickname || profileUser.name || 'Usuário';
+  const { totalReplies, totalLikes } = calculateStats();
 
   return (
     <div className="profile-container">
       <Header 
         darkMode={darkMode}
         onToggleDarkMode={toggleDarkMode}
-        onAskClick={handleAskClick}
+        onAskClick={handleOpenAskModal}
       />
 
       <main className="profile-content">
@@ -401,15 +528,11 @@ function Profile() {
                 <div className="stat-label">Perguntas</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">
-                  {userPosts.reduce((acc, post) => acc + post.reply_count, 0)}
-                </div>
+                <div className="stat-number">{totalReplies}</div>
                 <div className="stat-label">Respostas</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">
-                  {userPosts.reduce((acc, post) => acc + post.like_count, 0)}
-                </div>
+                <div className="stat-number">{totalLikes}</div>
                 <div className="stat-label">Curtidas</div>
               </div>
             </div>
@@ -420,17 +543,32 @@ function Profile() {
           <h2 className="section-title">
             <span className="section-title-icon">❓</span>
             Perguntas de {displayName}
+            {!isOwnProfile && (
+              <span className="privacy-note" style={{ fontSize: '14px', color: '#666', marginLeft: '10px' }}>
+                (apenas perguntas públicas)
+              </span>
+            )}
           </h2>
 
           {userPosts.length === 0 ? (
             <div className="no-questions">
-              <div className="no-questions-icon">🤔</div>
-              <h3>Nenhuma pergunta ainda</h3>
-              <p>{displayName} ainda não fez nenhuma pergunta na comunidade.</p>
+              <div className="no-questions-icon">
+                {isOwnProfile ? '🤔' : '🔒'}
+              </div>
+              <h3>
+                {isOwnProfile 
+                  ? 'Nenhuma pergunta ainda' 
+                  : 'Nenhuma pergunta pública disponível'}
+              </h3>
+              <p>
+                {isOwnProfile 
+                  ? 'Você ainda não fez nenhuma pergunta na comunidade.' 
+                  : `${displayName} não tem perguntas públicas ou todas são anônimas.`}
+              </p>
               {isOwnProfile && (
                 <button 
                   className="ask-button" 
-                  onClick={handleAskClick}
+                  onClick={handleOpenAskModal}
                   style={{ marginTop: '20px' }}
                 >
                   Faça sua primeira pergunta!
@@ -439,41 +577,80 @@ function Profile() {
             </div>
           ) : (
             <div className="user-posts-list">
-              {userPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className={`user-post-card ${genderClass}`}
-                >
-                  <div className="post-meta">
-                    <span className="post-date">{formatDate(post.created_at)}</span>
-                    <div className="post-stats">
-                      <div className="stat">
+              {userPosts.map((post) => {
+                const timeInfo = getTimeAgo(post.created_at);
+                const replyCount = safeNumber(post.reply_count);
+                const likeCount = safeNumber(post.like_count);
+                
+                return (
+                  <div
+                    key={`${post.id}-${currentTime.getMinutes()}`}
+                    className={`user-post-card ${genderClass} ${post.is_anonymous ? 'anonymous-post' : ''}`}
+                  >
+                    <div className="post-meta">
+                      <span className="post-time" title={timeInfo.fullDate}>
+                        {timeInfo.text}
+                      </span>
+                      
+                      {/* ✅ BADGE PARA PERGUNTAS ANÔNIMAS - APENAS NO TOPO */}
+                      {post.is_anonymous && isOwnProfile && (
+                        <span 
+                          className="anonymous-badge" 
+                          title="Pergunta anônima (só você pode ver no seu perfil)"
+                        >
+                          🎭 Anônimo
+                        </span>
+                      )}
+                      
+                      {post.category && (
+                        <span className="post-category"
+                          style={{
+                            backgroundColor: categories.find(c => c.id === post.category)?.color + '20',
+                            color: categories.find(c => c.id === post.category)?.color,
+                            borderColor: categories.find(c => c.id === post.category)?.color
+                          }}
+                        >
+                          {categories.find(c => c.id === post.category)?.emoji} 
+                          {categories.find(c => c.id === post.category)?.name}
+                        </span>
+                      )}
+                      
+                      <div className="post-stats">
+                        <div className="stat">
+                          <span>💬</span>
+                          <span>{replyCount}</span>
+                        </div>
+                        <div className="stat">
+                          <span>👍</span>
+                          <span>{likeCount}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ✅ TÍTULO DA PERGUNTA SEM O SÍMBOLO 🎭 REDUNDANTE */}
+                    <h3 className="post-question-title">
+                      {post.question}
+                    </h3>
+                    
+                    {post.description && (
+                      <p className="post-question-description">{post.description}</p>
+                    )}
+
+                    <div className="post-actions">
+                      <div className="reply-count">
+                        {replyCount} {replyCount === 1 ? 'resposta' : 'respostas'}
+                      </div>
+                      <button
+                        className="reply-button"
+                        onClick={() => handleReplyClick(post.id)}
+                      >
                         <span>💬</span>
-                        <span>{post.reply_count}</span>
-                      </div>
-                      <div className="stat">
-                        <span>👍</span>
-                        <span>{post.like_count}</span>
-                      </div>
+                        Ver Respostas
+                      </button>
                     </div>
                   </div>
-
-                  <p className="post-question">{post.question}</p>
-
-                  <div className="post-actions">
-                    <div className="reply-count">
-                      {post.reply_count} {post.reply_count === 1 ? 'resposta' : 'respostas'}
-                    </div>
-                    <button
-                      className="reply-button"
-                      onClick={() => handleReplyClick(post.id)}
-                    >
-                      <span>💬</span>
-                      Ver Respostas
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -486,7 +663,7 @@ function Profile() {
               <h2>Editar Perfil</h2>
               <button 
                 className="modal-close" 
-                onClick={handleCloseModal}
+                onClick={handleCloseEditModal}
                 disabled={uploading}
               >
                 ×
@@ -575,7 +752,7 @@ function Profile() {
             <div className="modal-actions">
               <button 
                 className="modal-cancel" 
-                onClick={handleCloseModal}
+                onClick={handleCloseEditModal}
                 disabled={uploading}
               >
                 Cancelar
@@ -591,6 +768,14 @@ function Profile() {
           </div>
         </div>
       )}
+
+      <AskModal
+        darkMode={darkMode}
+        isOpen={showAskModal}
+        onClose={handleCloseAskModal}
+        onSubmit={handlePostQuestion}
+        loading={postingQuestion}
+      />
     </div>
   );
 }
